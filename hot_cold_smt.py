@@ -1,4 +1,10 @@
-from z3 import Int, is_true, And, BoolSort, Bool
+from z3 import *
+
+from execution.listeners.print_b_program_runner_listener import PrintBProgramRunnerListener
+from model.bprogram import BProgram
+from model.event_selection.smt_event_selection_strategy import SMTEventSelectionStrategy
+
+false = BoolSort().cast(False)
 
 hot = Bool('hot')
 cold = Bool('cold')
@@ -6,7 +12,7 @@ cold = Bool('cold')
 
 def three_hot():
     for i in range(3):
-        while (yield {'request': hot})[hot] == BoolSort().cast(False):
+        while (yield {'request': hot})[hot] == false:
             pass
 
 
@@ -33,3 +39,10 @@ def exclusion():
 
 def schedule():
     yield {'block': cold}
+
+
+if __name__ == "__main__":
+    b_program = BProgram(bthreads=[three_cold(), three_hot(), exclusion(), no_two_same_in_a_row()],
+                         event_selection_strategy=SMTEventSelectionStrategy(),
+                         listener=PrintBProgramRunnerListener())
+    b_program.run()

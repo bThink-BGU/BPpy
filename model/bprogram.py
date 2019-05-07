@@ -1,22 +1,28 @@
-from collections import deque
 from importlib import import_module
-from inspect import getmembers, isfunction, isclass
+from inspect import getmembers, isfunction
+
 from z3 import *
 
 
-class Bprogram:
+class BProgram:
 
-    def __init__(self, source_name=None, event_selection_strategy=None, listener=None):
+    def __init__(self, bthreads=None, source_name=None, event_selection_strategy=None, listener=None):
         self.source_name = source_name
-        self.bthreads = None
+        self.bthreads = bthreads
         self.event_selection_strategy = event_selection_strategy
         self.listener = listener
         self.variables = None
         self.tickets = None
 
     def setup(self):
-        self.bthreads = [o[1]() for o in getmembers(import_module(self.source_name)) if isfunction(o[1]) and o[1].__module__ == self.source_name]
-        self.variables = dict([o for o in getmembers(import_module(self.source_name)) if isinstance(o[1], ExprRef) or isinstance(o[1], list)])
+        if not self.bthreads:
+            self.bthreads = [o[1]() for o in getmembers(import_module(self.source_name)) if
+                             isfunction(o[1]) and o[1].__module__ == self.source_name]
+
+            self.variables = dict([o for o in getmembers(import_module(self.source_name)) if
+                                   isinstance(o[1], ExprRef) or isinstance(o[1], list)])
+
+
         self.tickets = [{'bt': bt} for bt in self.bthreads]
         self.advance_bthreads(None)
 
