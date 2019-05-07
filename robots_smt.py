@@ -1,7 +1,7 @@
 import pygame
 
 from model.bprogram import BProgram
-from model.event_selection.experimental_smt_event_selection_strategy import SMTEventSelectionStrategy
+from model.event_selection.experimental_smt_event_selection_strategy import ExperimentalSMTEventSelectionStrategy
 from z3helper import *
 
 H = 250
@@ -32,8 +32,8 @@ def center_of_mass():
 
 
 def obstacle(i):
-    obs = And(nextX[i] >= Q(7, 10), nextX[i] <= Q(3, 4),
-              nextY[i] >= Q(7, 10), nextY[i] <= Q(3, 4))
+    obs = And(nextX[i] >= 0.7, nextX[i] <= 0.75,
+              nextY[i] >= 0.7, nextY[i] <= 0.75)
 
     yield {'block': obs, 'wait-for': false}
 
@@ -47,11 +47,11 @@ def structure_y():
 
 
 def init_x():
-    yield {'request': And([X[i] == Q(i, 10) for i in range(N)])}
+    yield {'request': And([X[i] == 0.1 * i for i in range(N)])}
 
 
 def init_y():
-    yield {'request': And([Y[i] == Q(i, 10) for i in range(N)])}
+    yield {'request': And([Y[i] == 0.1 * i for i in range(N)])}
 
 
 def step(i):
@@ -77,29 +77,30 @@ def display():
                 yield {'block': true for i in range(N)}
 
         m = yield {}
-        screen.fill((0, 0, 0))
+        screen.fill((250, 250, 250))
 
         for i in range(N):
             x = toFloat(m[X[i]])
             y = toFloat(m[Y[i]])
-            pygame.draw.rect(screen, (255, 100, 0),
+            pygame.draw.rect(screen, (50, 100, 0),
                              pygame.Rect(5 + x * H, 5 + y * W, 5, 5))
 
-        pygame.draw.rect(screen, (255, 255, 255),
+        pygame.draw.rect(screen, (0, 50, 255),
                          pygame.Rect(11.25 + 0.7 * H, 11.25 + 0.7 * W, 10, 10))
 
         pygame.display.flip()
         clock.tick(60)
 
 
-bounds = [walls(i) for i in range(N)]
-step = [step(i) for i in range(N)]
-obstacle = [obstacle(i) for i in range(N)]
-
 if __name__ == "__main__":
     b_program = BProgram(
+
         bthreads=[display(), init_x(), init_y(), center_of_mass(), structure_x(),
-                  structure_y()] + step + bounds + obstacle,
-        event_selection_strategy=SMTEventSelectionStrategy())
+                  structure_y()] +
+                 [walls(i) for i in range(N)] +
+                 [step(i) for i in range(N)] +
+                 [obstacle(i) for i in range(N)],
+
+        event_selection_strategy=ExperimentalSMTEventSelectionStrategy())
 
     b_program.run()

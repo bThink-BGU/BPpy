@@ -2,7 +2,7 @@ from model.event_selection.event_selection_strategy import EventSelectionStrateg
 from z3helper import *
 
 
-class SMTEventSelectionStrategy(EventSelectionStrategy):
+class ExperimentalSMTEventSelectionStrategy(EventSelectionStrategy):
 
     def is_satisfied(self, event, statement):
         return is_true(event.eval(statement.get('wait-for', true)))
