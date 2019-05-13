@@ -12,7 +12,7 @@ class SMTEventSelectionStrategy(EventSelectionStrategy):
         self.false = BoolSort().cast(False)
 
     def select(self, statements):
-        (request, block) = (self.false, self.false)
+        (request, block) = (self.true, self.false)  # TODO: need to change request back to false
 
         # Collect request and block statements
         for l in statements:
