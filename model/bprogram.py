@@ -54,9 +54,9 @@ class BProgram:
             # Finish the program if no event is selected
             if event is None:
                 break
-            self.advance_bthreads(event)
             if self.listener:
                 interrupted = self.listener.event_selected(b_program=self, event=event)
+            self.advance_bthreads(event)
 
         if self.listener:
             self.listener.ended(b_program=self)

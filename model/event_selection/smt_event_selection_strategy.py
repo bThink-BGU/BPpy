@@ -11,13 +11,18 @@ class SMTEventSelectionStrategy(EventSelectionStrategy):
         self.true = BoolSort().cast(True)
         self.false = BoolSort().cast(False)
 
-    def select(self, statements):
-        (request, block) = (self.true, self.false)  # TODO: need to change request back to false
+    def select(self, statements, additional_statement=None):
+        (request, block) = (self.false, self.false)  # TODO: need to change request back to false
 
         # Collect request and block statements
         for l in statements:
             request = Or(request, l.get('request', self.false))
             block = Or(block, l.get('block', self.false))
+
+        if additional_statement:
+            request = Or(request, additional_statement.get('request', self.false))
+            block = Or(block, additional_statement.get('block', self.false))
+
 
         # Compute a satisfying assignment
         sl = Solver()
@@ -25,6 +30,7 @@ class SMTEventSelectionStrategy(EventSelectionStrategy):
         if sl.check() == sat:
             return sl.model()
         else:
+            print(statements)
             return None
 
 
