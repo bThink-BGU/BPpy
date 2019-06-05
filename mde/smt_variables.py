@@ -16,4 +16,4 @@ ballGPS = Bool('ballGPS')
 getCompass = Bool('getCompass')
 
 # utility
-rewardReal = Int('reward')
+rewardReal = Real('reward')

@@ -35,7 +35,7 @@ def suck_ball():
     while True:
         m = yield {'wait-for': ballGPS}
         if mrv.getSuctionReal <= 0 and get_distance(mrv.GPSRealx, mrv.GPSRealy, mrv.ballGPSRealx, mrv.ballGPSRealy) <= 5:
-            m = yield {'request': And(setSuction, setSuctionReal == 100), 'wait-for': And(setSuction, setSuctionReal == 100)}
+            m = yield {'request': And(setSuction, setSuctionReal == -100), 'wait-for': And(setSuction, setSuctionReal == -100)}
 
 
 def stuck_in_south_wall():

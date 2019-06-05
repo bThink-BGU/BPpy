@@ -21,6 +21,7 @@ class BPEnv(gym.Env):
         self.last_event = self.bprogram.event_selection_strategy.select(self.bprogram.tickets, action)
         #print(self.last_event)
         cur_reward = float(self.last_event[rewardReal].as_string())
+        # TODO: use interrupted
         if self.last_event is None:
             #print("done", cur_reward)
             return None, cur_reward, True, {}

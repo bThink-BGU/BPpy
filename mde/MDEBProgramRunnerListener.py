@@ -16,10 +16,13 @@ class MDEBProgramRunnerListener(BProgramRunnerListener):
         self.testing = testing
         if not self.testing:
             self.socket = SocketCommunicator(TCP_IP, TCP_PORT, BUFFER_SIZE)
+        self.simulation_time = 240
+        self.simulation_path = "/Users/tomyaacov/Desktop/university/thesis/ChallengeProblem/mac/mac.app"  # TODO: change
+        self.start_time = None
 
     def starting(self, b_program):
-        file = "/Users/tomyaacov/Desktop/university/thesis/ChallengeProblem/mac/mac.app"  # TODO: change
-        subprocess.call(["open", file])
+        self.start_time = time.time()
+        subprocess.call(["open", self.simulation_path])
         time.sleep(4)
         if not self.testing:
             self.socket.connect()
@@ -28,9 +31,15 @@ class MDEBProgramRunnerListener(BProgramRunnerListener):
     def ended(self, b_program):
         if not self.testing:
             self.socket.close()
+        pr = subprocess.check_output("pgrep linux_universal", shell=True)
+        for p in pr.split("\n")[:-1]:
+            subprocess.call(["kill", "-9", p])  # TODO: change
+        #subprocess.call(["killall", "mac"])  # TODO: change
         print("ENDED")
 
     def event_selected(self, b_program, event):
+        if time.time() - self.start_time >= self.simulation_time:
+            return true
         reply = False
         entity = self.player_name
         if event[moveForward] == true:
@@ -71,6 +80,7 @@ class MDEBProgramRunnerListener(BProgramRunnerListener):
             else:
                 self.socket.no_reply(message)
         print(message)
+        return false
 
     def event_to_message(self, event_string, parameter=""):
         if event_string == "ball,GPS":

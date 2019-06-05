@@ -14,9 +14,13 @@ def reward_close_to_ball():
     m = yield {'wait-for': true}
     m = yield {'wait-for': getCompass}
     while True:
-        distance = get_distance(mrv.GPSRealx, mrv.GPSRealy, mrv.ballGPSRealx, mrv.ballGPSRealy)
-        sug_reward = -int(distance)
-        m = yield {'block': Not(rewardReal != sug_reward)}
+        if goal():
+            sug_reward = 5
+            m = yield {'block': Not(rewardReal != sug_reward)}
+        else:
+            distance = distance_from_ball()
+            sug_reward = -distance/100
+            m = yield {'block': Not(rewardReal != sug_reward)}
 
 
 def get_state():
@@ -99,12 +103,20 @@ def exclusion():
 # help functions
 
 
-def get_angle(x1, y1, x2, y2):
-    return abs(math.degrees(math.atan2(y2-y1, x2-x1)))
+def angle_to_ball():
+    return abs(math.degrees(math.atan2(mrv.ballGPSRealy-mrv.GPSRealy, mrv.ballGPSRealx-mrv.GPSRealx)))
 
 
-def get_distance(x1, y1, x2, y2):
-    return math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+def distance_from_ball():
+    return math.sqrt((mrv.ballGPSRealx - mrv.GPSRealx)**2 + (mrv.ballGPSRealy - mrv.GPSRealy)**2)
+
+
+def goal():
+    return mrv.ballGPSRealx > 45.99 and -9 <= mrv.ballGPSRealy <= 9
+
+
+def holding_ball():
+    return distance_from_ball() < 2.5 and mrv.getSuctionReal < 0
 
 
 def sign(x):
@@ -116,6 +128,9 @@ def sign(x):
 
 import gym
 import itertools
+import sys
+import datetime
+import os
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
@@ -143,7 +158,12 @@ def model(inpt, num_actions, scope, reuse=False):
 
 
 if __name__ == '__main__':
-    with U.make_session(num_cpu=8):
+    DIR = os.path.join(os.getcwd(), datetime.datetime.now().strftime("mde-%Y-%m-%d-%H-%M-%S-%f"))
+    gpu_options = tf.GPUOptions(visible_device_list=sys.argv[1])
+    config = tf.ConfigProto(gpu_options=gpu_options)
+    config.gpu_options.allow_growth = True
+    with U.make_session(config=config):
+        logger.configure(dir=DIR)
         # Create the environment
         listener = MDEBProgramRunnerListener(TCP_IP='127.0.0.1', TCP_PORT=9001, BUFFER_SIZE=1024, player_name="player1",
                                              testing=False)
@@ -180,7 +200,7 @@ if __name__ == '__main__':
 
         episode_rewards = [0.0]
         obs = env.reset()
-        for t in range(202):
+        for t in itertools.count():
             print(t)
             # Take action and update exploration to the newest value
             action = act(obs[None], update_eps=exploration.value(t))[0]
@@ -195,19 +215,19 @@ if __name__ == '__main__':
                 obs = env.reset()
                 episode_rewards.append(0)
 
-            is_solved = t > 100 and np.mean(episode_rewards[-101:-1]) >= 200
+            #is_solved = t > 1000 and np.mean(episode_rewards[-101:-1]) >= 200
+            is_solved = t > 1000 or np.mean(episode_rewards[-101:-1]) >= 1
             if is_solved:
-                # Show off the result
-                env.render()
+                U.save_variables(save_path=DIR)
             else:
                 # Minimize the error in Bellman's equation on a batch sampled from replay buffer.
-                #if t > 1000:
-                if t > 100:
+                if t > 1000:
+                #if t > 100:
                     obses_t, actions, rewards, obses_tp1, dones = replay_buffer.sample(32)
                     train(obses_t, actions, rewards, obses_tp1, dones, np.ones_like(rewards))
                 # Update target network periodically.
-                #if t % 1000 == 0:
-                if t % 100 == 0:
+                if t % 1000 == 0:
+                #if t % 100 == 0:
                     update_target()
 
             if done and len(episode_rewards) % 10 == 0:
