@@ -1,9 +1,7 @@
-from z3 import *
-
 from execution.listeners.print_b_program_runner_listener import PrintBProgramRunnerListener
 from model.bprogram import BProgram
 from model.event_selection.smt_event_selection_strategy import SMTEventSelectionStrategy
-from z3helper import *
+from utils.z3helper import *
 
 
 hot = Bool('hot')

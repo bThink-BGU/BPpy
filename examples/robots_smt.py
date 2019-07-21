@@ -2,7 +2,7 @@ import pygame
 
 from model.bprogram import BProgram
 from model.event_selection.experimental_smt_event_selection_strategy import ExperimentalSMTEventSelectionStrategy
-from z3helper import *
+from utils.z3helper import *
 
 H = 250
 W = 250

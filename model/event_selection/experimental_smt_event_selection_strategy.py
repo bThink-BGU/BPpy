@@ -1,5 +1,5 @@
 from model.event_selection.event_selection_strategy import EventSelectionStrategy
-from z3helper import *
+from utils.z3helper import *
 
 
 class ExperimentalSMTEventSelectionStrategy(EventSelectionStrategy):
