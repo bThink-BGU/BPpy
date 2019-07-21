@@ -30,7 +30,6 @@ class SMTEventSelectionStrategy(EventSelectionStrategy):
         if sl.check() == sat:
             return sl.model()
         else:
-            print(statements)
             return None
 
 

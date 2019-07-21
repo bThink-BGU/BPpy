@@ -34,6 +34,7 @@ class BProgram:
                     l.clear()
                     ll = bt.send(m)
                     l.update(ll)
+                    l.update(ll)
                     l.update({'bt': bt})
                 except (KeyError, StopIteration):
                     pass
