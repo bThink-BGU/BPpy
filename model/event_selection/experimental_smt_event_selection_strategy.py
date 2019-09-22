@@ -1,5 +1,8 @@
-from model.event_selection.event_selection_strategy import EventSelectionStrategy
-from utils.z3helper import *
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+from BPpy.model.event_selection.event_selection_strategy import EventSelectionStrategy
+from BPpy.utils.z3helper import *
 
 class Request:
     def __init__(self, variables=None):
