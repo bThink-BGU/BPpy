@@ -15,7 +15,7 @@ class BProgram:
         self.tickets = None
 
     def setup(self):
-        if not self.bthreads:
+        if self.source_name:
             self.bthreads = [o[1]() for o in getmembers(import_module(self.source_name)) if
                              isfunction(o[1]) and o[1].__module__ == self.source_name]
 

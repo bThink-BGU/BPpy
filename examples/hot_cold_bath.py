@@ -24,8 +24,8 @@ def control_temp():
 
 
 if __name__ == "__main__":
-    b_program = BProgram(bthreads=[add_hot(), add_cold(), control_temp()],
+    b_program = BProgram(source_name="hot_cold_bath",
+                         #bthreads=[add_hot(), add_cold(), control_temp()],
                          event_selection_strategy=SimpleEventSelectionStrategy(),
                          listener=PrintBProgramRunnerListener())
     b_program.run()
-
