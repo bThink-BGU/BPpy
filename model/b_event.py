@@ -35,6 +35,11 @@ class All(EventSet):
         super().__init__(lambda e: True)
 
 
+class EmptyEventSet(EventSet):
+    def __init__(self):
+        super().__init__(lambda e: False)
+
+
 class AllExcept(EventSet):
     def __init__(self, event):
         if isinstance(event, BEvent):

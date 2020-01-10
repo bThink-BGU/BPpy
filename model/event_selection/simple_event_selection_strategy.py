@@ -1,11 +1,21 @@
 from model.event_selection.event_selection_strategy import EventSelectionStrategy
 import random
+from model.b_event import BEvent, EmptyEventSet
 
 
 class SimpleEventSelectionStrategy(EventSelectionStrategy):
 
     def is_satisfied(self, event, statement):
-        return statement.get('request') == event or statement.get('waitFor') == event
+        if isinstance(statement.get('request'), BEvent):
+            if isinstance(statement.get('waitFor'), BEvent):
+                return statement.get('request') == event or statement.get('waitFor') == event
+            else:
+                return statement.get('request') == event or statement.get('waitFor', EmptyEventSet()).contains(event)
+        else:
+            if isinstance(statement.get('waitFor'), BEvent):
+                return statement.get('request', EmptyEventSet()).contains(event) or statement.get('waitFor') == event
+            else:
+                return statement.get('request', EmptyEventSet()).contains(event) or statement.get('waitFor', EmptyEventSet()).contains(event)
 
     def selectable_events(self, statements):
         possible_events = set()

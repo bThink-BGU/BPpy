@@ -1,8 +1,9 @@
 import pygame
 
 from model.bprogram import BProgram
-from model.event_selection.experimental_smt_event_selection_strategy import ExperimentalSMTEventSelectionStrategy
+from model.event_selection.smt_event_selection_strategy import SMTEventSelectionStrategy
 from utils.z3helper import *
+from execution.listeners.print_b_program_runner_listener import PrintBProgramRunnerListener
 
 H = 250
 W = 250
@@ -101,6 +102,8 @@ if __name__ == "__main__":
                  [step(i) for i in range(N)] +
                  [obstacle(i) for i in range(N)],
 
-        event_selection_strategy=ExperimentalSMTEventSelectionStrategy())
+        event_selection_strategy=SMTEventSelectionStrategy(),
+        listener=PrintBProgramRunnerListener())
+    b_program.event_selection_strategy.debug = True
 
     b_program.run()
