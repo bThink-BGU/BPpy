@@ -1,7 +1,7 @@
 import sys
 import os
-from model.event_selection.event_selection_strategy import EventSelectionStrategy
-from utils.z3helper import *
+from bppy.model.event_selection.event_selection_strategy import EventSelectionStrategy
+from bppy.utils.z3helper import *
 
 
 class Request:

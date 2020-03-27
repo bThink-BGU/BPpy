@@ -1,4 +1,4 @@
-from execution.listeners.b_program_runner_listener import BProgramRunnerListener
+from bppy.execution.listeners.b_program_runner_listener import BProgramRunnerListener
 
 
 class PrintBProgramRunnerListener(BProgramRunnerListener):

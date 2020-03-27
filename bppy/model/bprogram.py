@@ -22,7 +22,6 @@ class BProgram:
             self.variables = dict([o for o in getmembers(import_module(self.source_name)) if
                                    isinstance(o[1], ExprRef) or isinstance(o[1], list)])
 
-
         self.tickets = [{'bt': bt} for bt in self.bthreads]
         self.advance_bthreads(None)
 

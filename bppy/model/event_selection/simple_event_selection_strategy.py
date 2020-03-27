@@ -1,6 +1,6 @@
-from model.event_selection.event_selection_strategy import EventSelectionStrategy
+from bppy.model.event_selection.event_selection_strategy import EventSelectionStrategy
 import random
-from model.b_event import BEvent, EmptyEventSet
+from bppy.model.b_event import BEvent, EmptyEventSet
 
 
 class SimpleEventSelectionStrategy(EventSelectionStrategy):
@@ -10,12 +10,12 @@ class SimpleEventSelectionStrategy(EventSelectionStrategy):
             if isinstance(statement.get('waitFor'), BEvent):
                 return statement.get('request') == event or statement.get('waitFor') == event
             else:
-                return statement.get('request') == event or statement.get('waitFor', EmptyEventSet()).contains(event)
+                return statement.get('request') == event or statement.get('waitFor', EmptyEventSet()).__contains__(event)
         else:
             if isinstance(statement.get('waitFor'), BEvent):
-                return statement.get('request', EmptyEventSet()).contains(event) or statement.get('waitFor') == event
+                return statement.get('request', EmptyEventSet()).__contains__(event) or statement.get('waitFor') == event
             else:
-                return statement.get('request', EmptyEventSet()).contains(event) or statement.get('waitFor', EmptyEventSet()).contains(event)
+                return statement.get('request', EmptyEventSet()).__contains__(event) or statement.get('waitFor', EmptyEventSet()).__contains__(event)
 
     def selectable_events(self, statements):
         possible_events = set()
@@ -24,7 +24,10 @@ class SimpleEventSelectionStrategy(EventSelectionStrategy):
                 possible_events.add(statement['request'])
         for statement in statements:
             if 'block' in statement:
-                possible_events.discard(statement['block'])
+                if isinstance(statement.get('block'), BEvent):
+                    possible_events.discard(statement.get('block'))
+                else:
+                    possible_events = {x for x in possible_events if x not in statement.get('block')}
         return possible_events
 
     def select(self, statements):

@@ -1,9 +1,5 @@
+from bppy import *
 import pygame
-
-from model.bprogram import BProgram
-from model.event_selection.smt_event_selection_strategy import SMTEventSelectionStrategy
-from utils.z3helper import *
-from execution.listeners.print_b_program_runner_listener import PrintBProgramRunnerListener
 
 H = 250
 W = 250
@@ -65,38 +61,38 @@ def step(i):
 def walls(i):
     yield {'block': Or(nextX[i] < 0, nextX[i] > 1, nextY[i] < 0, nextY[i] > 1), 'wait-for': false}
 
-
-def display():
-    pygame.init()
-    screen = pygame.display.set_mode((W + 15, H + 15))
-
-    clock = pygame.time.Clock()
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                yield {'block': true for i in range(N)}
-
-        m = yield {}
-        screen.fill((250, 250, 250))
-
-        for i in range(N):
-            x = toFloat(m[X[i]])
-            y = toFloat(m[Y[i]])
-            pygame.draw.rect(screen, (50, 100, 0),
-                             pygame.Rect(5 + x * H, 5 + y * W, 5, 5))
-
-        pygame.draw.rect(screen, (0, 50, 255),
-                         pygame.Rect(11.25 + 0.7 * H, 11.25 + 0.7 * W, 10, 10))
-
-        pygame.display.flip()
-        clock.tick(60)
+# TODO: debug display function - issue with pygame
+# def display():
+#     pygame.init()
+#     screen = pygame.display.set_mode((W + 15, H + 15))
+#
+#     clock = pygame.time.Clock()
+#
+#     while True:
+#         for event in pygame.event.get():
+#             if event.type == pygame.QUIT:
+#                 yield {'block': true for i in range(N)}
+#
+#         m = yield {}
+#         screen.fill((250, 250, 250))
+#
+#         for i in range(N):
+#             x = toFloat(m[X[i]])
+#             y = toFloat(m[Y[i]])
+#             pygame.draw.rect(screen, (50, 100, 0),
+#                              pygame.Rect(5 + x * H, 5 + y * W, 5, 5))
+#
+#         pygame.draw.rect(screen, (0, 50, 255),
+#                          pygame.Rect(11.25 + 0.7 * H, 11.25 + 0.7 * W, 10, 10))
+#
+#         pygame.display.flip()
+#         clock.tick(60)
 
 
 if __name__ == "__main__":
     b_program = BProgram(
 
-        bthreads=[display(), init_x(), init_y(), center_of_mass(), structure_x(),
+        bthreads=[init_x(), init_y(), center_of_mass(), structure_x(),
                   structure_y()] +
                  [walls(i) for i in range(N)] +
                  [step(i) for i in range(N)] +
