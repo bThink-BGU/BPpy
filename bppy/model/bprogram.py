@@ -1,5 +1,6 @@
 from importlib import import_module
 from inspect import getmembers, isfunction
+from itertools import tee
 
 from z3 import *
 
@@ -32,7 +33,8 @@ class BProgram:
                     bt = l['bt']
                     l.clear()
                     ll = bt.send(m)
-                    l.update(ll)
+                    if ll is None:
+                        continue
                     l.update(ll)
                     l.update({'bt': bt})
                 except (KeyError, StopIteration):

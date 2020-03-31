@@ -1,10 +1,11 @@
 from bppy import *
 
 
+@b_thread
 def hello():
     yield {request: BEvent("Hello")}
 
-
+@b_thread
 def world():
     yield {request: BEvent("World")}
 

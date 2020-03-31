@@ -1,6 +1,8 @@
 from bppy.model.event_selection.event_selection_strategy import EventSelectionStrategy
+from bppy.model.b_event import BEvent
+from bppy.model.event_set import EmptyEventSet
 import random
-from bppy.model.b_event import BEvent, EmptyEventSet
+from collections.abc import Iterable
 
 
 class SimpleEventSelectionStrategy(EventSelectionStrategy):
@@ -21,7 +23,12 @@ class SimpleEventSelectionStrategy(EventSelectionStrategy):
         possible_events = set()
         for statement in statements:
             if 'request' in statement:  # should be eligible for sets
-                possible_events.add(statement['request'])
+                if isinstance(statement['request'], Iterable):
+                    possible_events.update(statement['request'])
+                elif isinstance(statement['request'], BEvent):
+                    possible_events.add(statement['request'])
+                else:
+                    raise TypeError("request parameter should be BEvent or iterable")
         for statement in statements:
             if 'block' in statement:
                 if isinstance(statement.get('block'), BEvent):

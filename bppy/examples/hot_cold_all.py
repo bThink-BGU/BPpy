@@ -1,18 +1,21 @@
 from bppy import *
 
 
+@b_thread
 def add_hot():
     yield {request: BEvent("HOT")}
     yield {request: BEvent("HOT")}
     yield {request: BEvent("HOT")}
 
 
+@b_thread
 def add_cold():
     yield {request: BEvent("COLD")}
     yield {request: BEvent("COLD")}
     yield {request: BEvent("COLD")}
 
 
+@b_thread
 def control_temp():
     e = BEvent("Dummy")
     while True:
