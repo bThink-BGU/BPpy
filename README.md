@@ -7,8 +7,6 @@ Install
 You can install ``bppy`` with:
 
 ```shell
-git clone https://github.com/tomyaacov/BPpy.git
-cd BPpy
 pip install -e .
 ```
 
