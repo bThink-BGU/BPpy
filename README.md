@@ -12,6 +12,7 @@ python bppy/examples/hot_cold_all.py
 
 
 ## Writing a BPpy program
+(bppy/examples/hot_cold_all.py)
 ```python
 from bppy import *
 
@@ -41,6 +42,7 @@ if __name__ == "__main__":
 ```
 
 ## Using Z3-Solver SMT
+(bppy/examples/hot_cold_smt.py)
 ```python
 from bppy import *
 
