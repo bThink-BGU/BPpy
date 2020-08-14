@@ -1,46 +1,77 @@
-BPpy: Behavioral Programming In Python
-=
+# BPpy: Behavioral Programming In Python
 
-Install
-============
-
+## Install
 You can install ``bppy`` with:
 
 ```shell
 pip install -e .
 ```
 
+## Running the Hot-Cold Example
+python bppy/examples/hot_cold_all.py
 
-Run
------------
 
+## Writing a BPpy program
 ```python
 from bppy import *
 
-
+@b_thread
 def add_hot():
     yield {request: BEvent("HOT")}
     yield {request: BEvent("HOT")}
     yield {request: BEvent("HOT")}
 
-
+@b_thread
 def add_cold():
     yield {request: BEvent("COLD")}
     yield {request: BEvent("COLD")}
     yield {request: BEvent("COLD")}
 
-
+@b_thread
 def control_temp():
+    e = BEvent("Dummy")
     while True:
-        yield {waitFor: BEvent("COLD"), block: BEvent("HOT")}
-        yield {waitFor: BEvent("HOT"), block: BEvent("COLD")}
+        e = yield {waitFor: All(), block: e}
 
-   
 if __name__ == "__main__":
-    b_program = BProgram(source_name="hot_cold_bath",
-                         # bthreads=[add_hot(), add_cold(), control_temp()], # alternative to source name
+    b_program = BProgram(bthreads=[add_hot(), add_cold(), control_temp()],
                          event_selection_strategy=SimpleEventSelectionStrategy(),
                          listener=PrintBProgramRunnerListener())
     b_program.run()
+```
 
+## Using Z3-Solver SMT
+```python
+from bppy import *
+
+hot = Bool('hot')
+cold = Bool('cold')
+
+@b_thread
+def three_hot():
+    for i in range(3):
+        while (yield {request: hot})[hot] == false:
+            pass
+
+@b_thread
+def three_cold():
+    for j in range(3):
+        m = yield {request: cold}
+        while m[cold] == false:
+            m = yield {request: cold}
+
+@b_thread
+def exclusion():
+    while True:
+        yield {block: And(hot, cold)}
+
+@b_thread
+def schedule():
+    yield {block: cold}
+
+if __name__ == "__main__":
+    b_program = BProgram(bthreads=[three_cold(), three_hot(), exclusion(), schedule()],
+                         event_selection_strategy=SMTEventSelectionStrategy(),
+                         listener=PrintBProgramRunnerListener())
+    b_program.run()
 ```
