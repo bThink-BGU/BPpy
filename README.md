@@ -8,11 +8,11 @@ pip install -e .
 ```
 
 ## Running the Hot-Cold Example
-python bppy/examples/hot_cold_all.py
+[python bppy/examples/hot_cold_all.py](python bppy/examples/hot_cold_all.py)
 
 
 ## Writing a BPpy program
-(bppy/examples/hot_cold_all.py)
+[bppy/examples/hot_cold_smt.py](bppy/examples/hot_cold_all.py)
 ```python
 from bppy import *
 
