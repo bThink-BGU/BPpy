@@ -15,23 +15,3 @@ from bppy.model.sync_statement import *
 from bppy.model.b_thread import *
 from bppy.utils.z3helper import *
 
-# def getListOfFiles(dirName):
-#     # create a list of file and sub directories
-#     # names in the given directory
-#     listOfFile = listdir(dirName)
-#     allFiles = list()
-#     # Iterate over all the entries
-#     for entry in listOfFile:
-#         # Create full path
-#         fullPath = join(dirName, entry)
-#         # If entry is a directory then get the list of files in this directory
-#         if isdir(fullPath):
-#             allFiles = allFiles + getListOfFiles(fullPath)
-#         else:
-#             print(fullPath)
-#             allFiles.append(fullPath)
-#     return allFiles
-#
-# print([ basename(f)[:-3] for f in getListOfFiles(dirname(__file__)) if f[-3:] == ".py" and not f.endswith('__init__.py')])
-# __all__ = [ basename(f)[:-3] for f in getListOfFiles(dirname(__file__)) if f[-3:] == ".py" and not f.endswith('__init__.py')]
-#__all__ = ["examples", "execution", "model", "utils"]

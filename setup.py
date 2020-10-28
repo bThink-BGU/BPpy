@@ -11,7 +11,7 @@ setuptools.setup(
     description="BPpy: Behavioral Programming In Python",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/tomyaacov/BPpy",
+    url="https://github.com/bThink-BGU/BPpy",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
