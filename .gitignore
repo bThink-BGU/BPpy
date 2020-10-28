@@ -152,3 +152,6 @@ fabric.properties
 
 # macOS
 .DS_Store
+
+# vscode
+.vscode/
