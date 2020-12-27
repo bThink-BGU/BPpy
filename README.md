@@ -77,3 +77,15 @@ if __name__ == "__main__":
                          listener=PrintBProgramRunnerListener())
     b_program.run()
 ```
+
+To cite this repository in publications:
+```
+@misc{bppy,
+  author = {Tom Yaacov},
+  title = {BPpy: Behavioral Programming In Python},
+  year = {2020},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/bThink-BGU/BPpy}},
+}
+```
