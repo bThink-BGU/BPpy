@@ -5,7 +5,7 @@ class BEvent:
         self.data = data
 
     def __key(self):
-        return tuple([self.name]) + tuple(self.data.items())
+        return tuple([self.name]) + tuple(str(self.data.items()))
 
     def __hash__(self):
         return hash(self.__key())
