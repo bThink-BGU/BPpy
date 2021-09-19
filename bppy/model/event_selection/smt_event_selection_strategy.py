@@ -5,7 +5,7 @@ from bppy.utils.z3helper import *
 class SMTEventSelectionStrategy(EventSelectionStrategy):
 
     def is_satisfied(self, event, statement):
-        return is_true(event.eval(statement.get('waitFor', true)))  # TODO: not sure if it's the right approach
+        return is_true(event.eval(statement.get('waitFor', true)))  
 
     def select(self, statements, additional_statement=None):
         (request, block) = (false, false)

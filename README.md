@@ -4,7 +4,7 @@
 You can install ``bppy`` with:
 
 ```shell
-pip install -e .
+pip install bppy
 ```
 
 ## Running the Hot-Cold Example
