@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bppy",
-    version="0.0.2",
+    version="0.0.3",
     author="Tom Yaacov",
     author_email="tomyaacov1210@gmail.com",
     description="BPpy: Behavioral Programming In Python",

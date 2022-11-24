@@ -10,7 +10,6 @@ def exponential_growth(exp):
 
 
 if __name__ == "__main__":
-    global b_program
     b_program = BProgram(bthreads=[exponential_growth(4)],
                          event_selection_strategy=SimpleEventSelectionStrategy(),
                          listener=PrintBProgramRunnerListener())
