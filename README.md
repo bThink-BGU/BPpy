@@ -1,4 +1,5 @@
 # BPpy: Behavioral Programming In Python
+A Python implementation for the Behavioral Programming paradigm
 
 ## Install
 You can install ``bppy`` with:
