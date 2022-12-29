@@ -37,10 +37,13 @@ class SimpleEventSelectionStrategy(EventSelectionStrategy):
                     possible_events = {x for x in possible_events if x not in statement.get('block')}
         return possible_events
 
-    def select(self, statements):
+    def select(self, statements, external_events_queue=[]):
         selectable_events = self.selectable_events(statements)
         if selectable_events:
             return random.choice(tuple(selectable_events))
         else:
-            return None
+            if len(external_events_queue) > 0:
+                return external_events_queue.pop(0)
+            else:
+                return None
 

@@ -15,6 +15,7 @@ class BProgram:
         self.listener = listener
         self.variables = None
         self.tickets = []
+        self.external_events_queue = []
 
     def setup(self):
         if self.source_name:
@@ -45,7 +46,7 @@ class BProgram:
         self.new_bt.append(bt)
 
     def next_event(self):
-        return self.event_selection_strategy.select(self.tickets)
+        return self.event_selection_strategy.select(self.tickets, self.external_events_queue)
 
     def run(self):
         if self.listener:
@@ -74,3 +75,6 @@ class BProgram:
 
         if self.listener:
             self.listener.ended(b_program=self)
+
+    def enqueue_external_event(self, event):
+        self.external_events_queue.append(event)
