@@ -155,3 +155,8 @@ fabric.properties
 
 # vscode
 .vscode/
+bppy/examples/game_display.py
+bppy/examples/game_parameters.py
+bppy/examples/gui_example.py
+bppy/examples/snake_main.py
+bppy/examples/thread_producer_consumer.py
