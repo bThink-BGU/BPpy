@@ -1,12 +1,11 @@
-from copy import deepcopy
+from copy import copy
 
 
 def b_thread(func):
     def wrapper(*args):
         while True:
             m = None
-            args_copy = deepcopy(args)
-            f = func(*args_copy)
+            f = func(*args)
             while True:
                 try:
                     e = f.send(m)
