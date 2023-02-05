@@ -1,5 +1,5 @@
 from bppy import *
-import pygame
+# import pygame
 
 H = 250
 W = 250
