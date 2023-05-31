@@ -1,6 +1,7 @@
 from importlib import import_module
 from inspect import getmembers, isfunction
 from itertools import tee
+import warnings
 
 from z3 import *
 
@@ -26,9 +27,12 @@ class BProgram:
                                    isinstance(o[1], ExprRef) or isinstance(o[1], list)])
 
         self.new_bt = self.bthreads
+        self.load_new_bthreads()
 
 
     def advance_bthreads(self,tickets, m):
+        if len(self.new_bt) > 0:
+            warnings.warn("Some new bthreads are not loaded and are not affecting the bprogram. Use the load_new_bthreads method to load them.", RuntimeWarning)
         for l in tickets:
             if m is None or self.event_selection_strategy.is_satisfied(m, l):
                 try:
@@ -42,10 +46,21 @@ class BProgram:
                 except (KeyError, StopIteration):
                     pass
 
-    def add_bthread(self,bt):
+    def add_bthread(self, bt):
         self.new_bt.append(bt)
 
+    def load_new_bthreads(self):
+        while len(self.new_bt) > 0:
+            new_tickets = [{'bt': bt} for bt in self.new_bt]
+            self.new_bt.clear()
+            self.advance_bthreads(new_tickets, None)
+            self.tickets.extend(new_tickets)
+
     def next_event(self):
+        if len(self.new_bt) > 0:
+            warnings.warn(
+                "Some new bthreads are not loaded and are not affecting the bprogram. Use the load_new_bthreads method to load them.",
+                RuntimeWarning)
         return self.event_selection_strategy.select(self.tickets, self.external_events_queue)
 
     def run(self):
@@ -56,12 +71,8 @@ class BProgram:
         # Main loop
         interrupted = False
         while not interrupted:
-            #for dynamic adding new bthreads 
-            while len(self.new_bt)>0:
-                new_tickets = [{'bt': bt} for bt in self.new_bt]
-                self.new_bt.clear()
-                self.advance_bthreads(new_tickets,None)
-                self.tickets.extend(new_tickets)
+            # for dynamically added bthreads
+            self.load_new_bthreads()
 
             event = self.next_event()
             # Finish the program if no event is selected
