@@ -9,6 +9,7 @@ from bppy.model.event_selection.simple_event_selection_strategy import *
 from bppy.model.event_selection.solver_based_event_selection_strategy import *
 from bppy.model.event_selection.smt_event_selection_strategy import *
 from bppy.model.event_selection.experimental_smt_event_selection_strategy import *
+from bppy.model.event_selection.priority_based_event_selection_strategy import *
 from bppy.model.b_event import *
 from bppy.model.bprogram import *
 from bppy.model.event_set import *
