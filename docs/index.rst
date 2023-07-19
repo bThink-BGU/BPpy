@@ -8,6 +8,8 @@ Welcome to BPpy's documentation!
 
 BPpy is a Python implementation for the Behavioral Programming paradigm.
 
+A general introduction to Behavioral Programming can be found in `this <https://bpjs.readthedocs.io/en/develop>`_ BPjs tutorial and others.
+
 +++++++++++++++
 Installation
 +++++++++++++++
@@ -17,17 +19,12 @@ You can install ``bppy`` with pip:
 
    pip install bppy
 
-
 .. toctree::
    :maxdepth: 2
-   :caption: Examples
+   :caption: Contents
 
-   Examples/hello_world
-   Examples/hot_cold
-   Examples/hot_cold_smt
-   Examples/hot_cold_dynamic
-   Examples/external_events
-   Examples/tic_tac_toe_priorities
+   modules
+   Examples/examples
 
 
 
