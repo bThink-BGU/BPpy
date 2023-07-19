@@ -1,11 +1,12 @@
 import setuptools
-
-with open("README.md", "r") as fh:
+import os
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+with open(os.path.join(__location__, "README.md"), "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="bppy",
-    version="0.0.5",
+    version="0.0.6",
     author="Tom Yaacov",
     author_email="tomyaacov1210@gmail.com",
     description="BPpy: Behavioral Programming In Python",

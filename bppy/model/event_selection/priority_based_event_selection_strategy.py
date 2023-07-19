@@ -4,11 +4,43 @@ from bppy.model.b_event import BEvent
 
 
 class PriorityBasedEventSelectionStrategy(SimpleEventSelectionStrategy):
+    """
+    Priority-based extension for :class:`SimpleEventSelectionStrategy
+    <bppy.model.event_selection.event_selection_strategy.SimpleEventSelectionStrategy>`, selecting the requested
+    non-blocked event with the highest priority. If no priority is specified for an event, the `default_priority`
+    attribute is used.
 
+    Attributes
+    ----------
+    default_priority : int
+        The default priority value to use if no priority is specified for an event.
+    """
     def __init__(self, default_priority=0):
+        """
+        Constructs a new PriorityBasedEventSelectionStrategy with a given default priority.
+
+        Parameters
+        ----------
+        default_priority : int, optional
+            The default priority to be used when no specific priority is given for an event.
+        """
         self.default_priority = default_priority
 
     def selectable_events(self, statements):
+        """
+        Returns a set of possible events that can be selected from a list of bthread statements. Specifically,
+        the method extracts requested non-blocked events, with the maximal priority value, from the provided bthreads statements.
+
+        Parameters
+        ----------
+        statements : list
+            A list of bthread statements from which to extract possible events.
+
+        Returns
+        -------
+        set
+            A set of possible events that can be selected.
+        """
         possible_events = set()
         for statement in statements:
             if 'request' in statement:  # should be eligible for sets

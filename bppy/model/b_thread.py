@@ -2,6 +2,9 @@ from copy import copy
 
 
 def b_thread(func):
+    """
+    A decorator to wrap bthread generator with, in order to handle data transmission and bthread termination.
+    """
     def wrapper(*args):
         while True:
             m = None

@@ -1,6 +1,25 @@
 class BEvent:
+    """
+    A class to represent a Behavioral Event (BEvent) object.
 
+    Attributes
+    ----------
+    name : str
+        The name of the event.
+    data : dict
+        Additional data associated with the event.
+    """
     def __init__(self, name="", data={}):
+        """
+        Constructs all the necessary attributes for the BEvent object.
+
+        Parameters
+        ----------
+        name : str
+            The name of the event.
+        data : dict
+            Additional data associated with the event.
+        """
         self.name = name
         self.data = data
 

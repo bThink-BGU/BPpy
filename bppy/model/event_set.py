@@ -3,8 +3,29 @@ from inspect import signature
 
 
 class EventSet:
+    """
+    A class to represent a symbolically defined set of events using a given predicate.
+
+    Attributes
+    ----------
+    predicate : callable
+        The predicate that tests if an event is a member of this event set.
+    data : dict
+        Additional keyword arguments that could be used by the predicate.
+    """
 
     def __init__(self, predicate, **kwargs):
+        """
+        Constructs all the necessary attributes for the EventSet object.
+
+        Parameters
+        ----------
+        predicate : callable
+            The predicate that tests if an event is a member of this event set. It should be a function
+            that takes an event as its first argument and returns a boolean.
+        **kwargs : dict
+            Additional keyword arguments that could be used by the predicate.
+        """
         self.predicate = predicate
         self.data = kwargs
 
@@ -16,17 +37,38 @@ class EventSet:
 
 
 class All(EventSet):
+    """
+    A class to represent the set of all events.
+    """
     def __init__(self):
         super().__init__(lambda e: True)
 
 
 class EmptyEventSet(EventSet):
+    """
+    A class to represent an empty event set.
+    """
     def __init__(self):
         super().__init__(lambda e: False)
 
 
 class AllExcept(EventSet):
+    """
+    A class to represent a set of all events except some specified event or event set.
+    """
     def __init__(self, event):
+        """
+        Constructs all the necessary attributes for the AllExcept object.
+
+        If the input event is an instance of BEvent, an EventSet is created with a predicate that
+        matches all events except for the input event. If the input event is an EventSet, an EventSet is
+        created with a predicate that matches all events not contained in the input EventSet.
+
+        Parameters
+        ----------
+        event : `BEvent <bppy.model.b_event.BEvent>` or `EventSet <bppy.model.event_set.EventSet>`
+            The event or set of events to be excluded from the event set.
+        """
         if isinstance(event, BEvent):
             super().__init__(lambda e: event != e)
         else:  # Event Set
@@ -34,12 +76,25 @@ class AllExcept(EventSet):
 
 
 class EventSetList(EventSet):
+    """
+    A class to represent a union of event sets and events.
+    """
     def __init__(self, lst):
+        """
+        Constructs all the necessary attributes for the EventSetList object.
+
+        Parameters
+        ----------
+        lst : list
+            A list of `BEvent <bppy.model.b_event.BEvent>` or `EventSet <bppy.model.event_set.EventSet>` objects.
+            The resulting EventSetList will contain any event that is equal to a BEvent
+            in the list or is contained in an EventSet in the list.
+        """
         self.lst = lst
-        super().__init__(lambda e: any([EventSetList.item_contains(item, e) for item in self.lst]))
+        super().__init__(lambda e: any([EventSetList._item_contains(item, e) for item in self.lst]))
 
     @staticmethod
-    def item_contains(item, event):
+    def _item_contains(item, event):
         if isinstance(item, BEvent):
             return event == item
         elif len(signature(item.predicate).parameters) > 1:
