@@ -17,3 +17,4 @@ from bppy.model.sync_statement import *
 from bppy.model.b_thread import *
 from bppy.utils.z3helper import *
 
+__version__ = '0.0.7'
