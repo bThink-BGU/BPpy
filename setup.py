@@ -6,7 +6,7 @@ with open(os.path.join(__location__, "README.md"), "r") as fh:
 
 setuptools.setup(
     name="bppy",
-    version="0.0.6",
+    version="0.0.7",
     author="Tom Yaacov",
     author_email="tomyaacov1210@gmail.com",
     description="BPpy: Behavioral Programming In Python",
