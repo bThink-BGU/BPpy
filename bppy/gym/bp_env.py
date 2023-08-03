@@ -8,6 +8,9 @@ from bppy import SolverBasedEventSelectionStrategy
 
 
 class BPEnv(gym.Env):
+    """
+
+    """
     def __init__(self, bprogram_generator, event_list, observation_space, reward_function):
         self.metadata = {}
         self.bprogram = None

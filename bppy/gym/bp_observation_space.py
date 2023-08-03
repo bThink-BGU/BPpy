@@ -2,7 +2,9 @@ from gymnasium.spaces import MultiDiscrete
 
 
 class BPObservationSpace(MultiDiscrete):
+    """
 
+    """
     @property
     def np_random(self):
         return super().np_random
