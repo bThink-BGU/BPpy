@@ -1,16 +1,30 @@
 import setuptools
 import os
-import bppy
 
-VERSION = bppy.__version__
+def get_version(rel_path):
+    with open(rel_path, "r") as fh:
+        for line in fh:
+            if line.startswith("__version__"):
+                delim = '"' if '"' in line else "'"
+                return line.split(delim)[1]
+    raise RuntimeError("Unable to find version string.")
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 with open(os.path.join(__location__, "README.md"), "r") as fh:
     long_description = fh.read()
 
+gym_dependencies = [
+    "gymnasium>=0.28.1",
+    "stable-baselines3>=2.0.0"
+    ]
+develop_dependencies = [
+    "Sphinx>=5.3.0",
+    "sphinx-rtd-theme>=1.2.1",
+]
+
 setuptools.setup(
     name="bppy",
-    version=VERSION,
+    version=get_version("bppy/__init__.py"),
     author="Tom Yaacov",
     author_email="tomyaacov1210@gmail.com",
     description="BPpy: Behavioral Programming In Python",
@@ -24,7 +38,11 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        "z3-solver>=4.8.5.0",
+        "z3-solver>=4.8.5.0"
     ],
-    #python_requires='>=3.6'
+    extras_require={
+        "gym": gym_dependencies,
+        "develop": gym_dependencies + develop_dependencies
+    },
+    python_requires='>=3.4'
 )
