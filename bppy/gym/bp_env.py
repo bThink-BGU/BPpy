@@ -1,9 +1,6 @@
-from typing import Any
-
 import gymnasium as gym
-from gymnasium.core import ObsType
-
 from bppy.gym.bp_action_space import BPActionSpace
+from bppy.gym.simple_bp_observation_space import SimpleBPObservationSpace
 from bppy import SolverBasedEventSelectionStrategy
 
 
@@ -11,14 +8,17 @@ class BPEnv(gym.Env):
     """
 
     """
-    def __init__(self, bprogram_generator, event_list, observation_space, reward_function):
+    def __init__(self, bprogram_generator, event_list, observation_space=None, reward_function=None):
         self.metadata = {}
         self.bprogram = None
         self.bprogram_generator = bprogram_generator
         self.action_space = BPActionSpace(event_list)
-        self.observation_space = observation_space
         self.reward_function = reward_function
-
+        if self.reward_function is None:
+            self.reward_function = lambda rewards: sum(filter(None, rewards))
+        self.observation_space = observation_space
+        if self.observation_space is None:
+            self.observation_space = SimpleBPObservationSpace(self.bprogram_generator, event_list)
     def step(self, action):
         if self.bprogram is None:
             raise RuntimeError("You must call reset() before calling step()")
@@ -45,13 +45,13 @@ class BPEnv(gym.Env):
         self.bprogram = None
 
     def _bthreads_states(self):
-        return [x.get("locals", {}).get("_state") for x in self.bprogram.tickets]
+        return [dict([k, v] for k, v in statement.items() if k != "bt") for statement in self.bprogram.tickets]
 
     def _state(self):
         return self.observation_space.bp_state_to_gym_space(self._bthreads_states())
 
     def _bthreads_rewards(self):
-        return [x.get("locals", {}).get("_reward") for x in self.bprogram.tickets]
+        return [x.get("reward") for x in self.bprogram.tickets]
 
     def _reward(self):
         return self.reward_function(self._bthreads_rewards())

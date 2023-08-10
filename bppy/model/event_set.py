@@ -1,5 +1,5 @@
 from bppy.model.b_event import BEvent
-from inspect import signature
+from inspect import signature, getsource
 
 
 class EventSet:
@@ -34,6 +34,21 @@ class EventSet:
             return self.predicate(event, self.data)
         else:
             return self.predicate(event)
+
+    def __key(self):
+        return str(getsource(self.predicate)) + str(self.data)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        return self.__key() == other.__key()
+
+    def __str__(self):
+        return self.__key()
+
+    def __repr__(self):
+        return self.__str__()
 
 
 class All(EventSet):
