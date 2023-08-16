@@ -8,6 +8,7 @@ Subpackages
    :maxdepth: 4
 
    bppy.execution
+   bppy.gym
    bppy.model
    bppy.utils
 

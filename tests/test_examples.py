@@ -91,6 +91,7 @@ class TestExamples(unittest.TestCase):
     def test_hot_cold_smt(self):
         hot = Bool('hot')
         cold = Bool('cold')
+        temp = Real('temp')
 
         @b_thread
         def three_hot():
@@ -106,16 +107,45 @@ class TestExamples(unittest.TestCase):
         def control_temp():
             m = yield {}
             while True:
-                if is_true(m[cold]):
-                    m = yield {block: cold}
-                if is_true(m[hot]):
-                    m = yield {block: hot}
+                yield {waitFor: hot}
+                yield {block: hot, waitFor: cold}
 
         @b_thread
         def mutual_exclusion():
             yield {block: And(cold, hot), waitFor: false}
 
-        b_program = BProgram(bthreads=[three_cold(), three_hot(), mutual_exclusion(), control_temp()],
+        @b_thread
+        def hot_temp():
+            while True:
+                yield {block: And(hot, temp <= 50), waitFor: false}
+
+        @b_thread
+        def cold_temp():
+            while True:
+                yield {block: And(cold, temp >= 50), waitFor: false}
+
+        @b_thread
+        def after_hot_temp():
+            while True:
+                m = yield {waitFor: hot}
+                while is_true(m[hot]):
+                    m = yield {block: temp <= 20}
+
+        @b_thread
+        def after_cold_temp():
+            while True:
+                m = yield {waitFor: cold}
+                while is_true(m[cold]):
+                    m = yield {block: temp >= 80}
+
+        b_program = BProgram(bthreads=[three_cold(),
+                                       three_hot(),
+                                       mutual_exclusion(),
+                                       control_temp(),
+                                       hot_temp(),
+                                       cold_temp(),
+                                       after_hot_temp(),
+                                       after_cold_temp()],
                              event_selection_strategy=SMTEventSelectionStrategy())
         b_program.run()
         assert True

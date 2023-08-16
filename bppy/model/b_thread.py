@@ -12,6 +12,8 @@ def b_thread(func):
             while True:
                 try:
                     e = f.send(m)
+                    if isinstance(e, dict):
+                        e["locals"] = copy(f.gi_frame.f_locals)
                     m = yield e
                     if m is None:
                         break
