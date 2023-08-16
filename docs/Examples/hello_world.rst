@@ -1,4 +1,4 @@
 Hello World
 +++++++++++
 
-.. literalinclude :: ../../bppy/examples/hello_world.py
+.. literalinclude :: ../../examples/hello_world.py

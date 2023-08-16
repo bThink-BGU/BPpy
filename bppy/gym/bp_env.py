@@ -8,6 +8,7 @@ class BPEnv(gym.Env):
     """
 
     """
+
     def __init__(self, bprogram_generator, event_list, observation_space=None, reward_function=None):
         self.metadata = {}
         self.bprogram = None
@@ -19,6 +20,7 @@ class BPEnv(gym.Env):
         self.observation_space = observation_space
         if self.observation_space is None:
             self.observation_space = SimpleBPObservationSpace(self.bprogram_generator, event_list)
+
     def step(self, action):
         if self.bprogram is None:
             raise RuntimeError("You must call reset() before calling step()")

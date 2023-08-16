@@ -1,4 +1,4 @@
 Hot Cold
 +++++++++++
 
-.. literalinclude :: ../../bppy/examples/hot_cold_all.py
+.. literalinclude :: ../../examples/hot_cold_all.py

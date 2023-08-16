@@ -28,6 +28,14 @@ bppy.gym.bp\_observation\_space module
    :undoc-members:
    :show-inheritance:
 
+bppy.gym.simple\_bp\_observation\_space module
+----------------------------------------------
+
+.. automodule:: bppy.gym.simple_bp_observation_space
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 
