@@ -3,7 +3,8 @@ from gymnasium.spaces import MultiDiscrete
 
 class BPObservationSpace(MultiDiscrete):
     """
-
+    A base class used to represent a BProgram-based observation space. This is an abstract class
+    that requires the implementation of `bp_state_to_gym_space` methods.
     """
     @property
     def np_random(self):
@@ -35,4 +36,8 @@ class BPObservationSpace(MultiDiscrete):
         return super().from_jsonable(sample_n)
 
     def bp_state_to_gym_space(self, bthreads_states):
+        """
+        Abstract method that transforms the bprogram's state, received as a list of bthreads statements, to a gym space
+        representation.
+        """
         raise NotImplementedError("bp_state_to_gym_space not implemented")
