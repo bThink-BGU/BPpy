@@ -6,13 +6,13 @@ import numpy as np
 
 @b_thread
 def add_hot():
-    for i in range(3):
-        yield {request: bp.BEvent("HOT"), localReward: -0.1}
-    yield {request: bp.BEvent("DONE"), localReward: 1}
+    for i in range(5):
+        yield {request: bp.BEvent("HOT"), localReward: -0.01}
+    yield {waitFor: bp.All(), localReward: 1}
 
 @b_thread
 def add_cold():
-    for i in range(3):
+    for i in range(5):
         yield {request: bp.BEvent("COLD")}
 
 
@@ -29,9 +29,10 @@ def init_bprogram():
 
 
 if __name__ == '__main__':
+    event_list = [bp.BEvent("HOT"), bp.BEvent("COLD")]
     env = BPEnv(bprogram_generator=init_bprogram,
-                event_list=[bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("DONE")],
-                observation_space=SimpleBPObservationSpace(init_bprogram, [bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("DONE")]),
+                event_list=event_list,
+                observation_space=SimpleBPObservationSpace(init_bprogram, event_list),
                 reward_function=lambda rewards: sum(filter(None, rewards)))
     state, _ = env.reset()
     print(state)
