@@ -8,6 +8,21 @@ You can install ``bppy`` with pip:
 pip install bppy
 ```
 
+This does not include dependencies for gym integration. To install ``bppy`` with gym integration, use:
+
+```shell
+pip install bppy[gym]
+```
+
+If installation is not working, you can try upgrading pip:
+
+```shell
+pip install --upgrade pip
+```
+
+before submitting an issue.
+
+
 ## Documentation
 * [BPpy documentation](https://bppy.readthedocs.io/en/latest/)
 * General introduction to Behavioral Programming can be found in [this](https://bpjs.readthedocs.io/en/develop/) BPjs tutorial and others

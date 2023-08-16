@@ -19,6 +19,20 @@ You can install ``bppy`` with pip:
 
    pip install bppy
 
+This does not include dependencies for gym integration. To install ``bppy`` with gym integration, use:
+
+.. code-block:: shell
+
+   pip install bppy[gym]
+
+If installation is not working, you can try upgrading pip:
+
+.. code-block:: shell
+
+   pip install --upgrade pip
+
+before submitting an issue.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents
