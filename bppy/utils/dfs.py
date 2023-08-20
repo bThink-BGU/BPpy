@@ -64,6 +64,5 @@ class DFSBThread:
                 s.transitions[e] = new_s
                 if new_s not in visited:
                     stack.append(new_s)
-        visited = [s.data for s in visited]
         return init_s, visited
 

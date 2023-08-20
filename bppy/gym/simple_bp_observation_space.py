@@ -62,5 +62,6 @@ class SimpleBPObservationSpace(BPObservationSpace):
             f = lambda: self.bprogram_generator().bthreads[i]
             dfs = DFSBThread(f, ess, self.event_list)
             init_s, visited = dfs.run()
+            visited = [s.data for s in visited]
             mapper[i] = visited
         return mapper
