@@ -19,6 +19,9 @@ class Node:
     def __str__(self):
         return str(self.prefix) + str(self.data)
 
+    def get_key(self):
+        return self.__key()
+
 
 class DFSBThread:
     def __init__(self, bthread_gen, ess, event_list):
@@ -45,7 +48,6 @@ class DFSBThread:
             return {}
         return s
 
-
     def run(self):
         init_s = Node(tuple(), self.get_state(tuple()))
         visited = []
@@ -65,4 +67,56 @@ class DFSBThread:
                 if new_s not in visited:
                     stack.append(new_s)
         return init_s, visited
+
+
+class NodeList:
+    def __init__(self, nodes):
+        self.nodes = nodes
+        self.transitions = {}
+
+    def __key(self):
+        return ";".join([n.get_key() for n in self.nodes])
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        return self.__key() == other.__key()
+
+
+class DFSBProgram:
+    def __init__(self, bprogram_generator, event_list):
+        self.bprogram_generator = bprogram_generator
+        self.event_list = event_list
+
+    def run(self):
+        mapper = {}
+        init = []
+        n = len(self.bprogram_generator().bthreads)
+        ess = self.bprogram_generator().event_selection_strategy
+        for i in range(n):
+            f = lambda: self.bprogram_generator().bthreads[i]
+            dfs = DFSBThread(f, ess, self.event_list)
+            init_s, visited = dfs.run()
+            mapper[i] = visited
+            init.append(init_s)
+
+        init = NodeList(init)
+        visited = []
+        stack = [init]
+        while len(stack):
+            s = stack.pop()
+            if s not in visited:
+                visited.append(s)
+
+            for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
+                new_s = []
+                for i, bt_s in enumerate(s.nodes):
+                    new_s.append(mapper[i][mapper[i].index(bt_s)].transitions[e])
+                new_s = NodeList(new_s)
+                s.transitions[e] = new_s
+                if new_s not in visited:
+                    stack.append(new_s)
+        return init, visited
+
 
