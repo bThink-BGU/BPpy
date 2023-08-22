@@ -70,8 +70,9 @@ class DFSBThread:
 
 
 class NodeList:
-    def __init__(self, nodes):
+    def __init__(self, nodes, prefix):
         self.nodes = nodes
+        self.prefix = prefix
         self.transitions = {}
 
     def __key(self):
@@ -85,38 +86,68 @@ class NodeList:
 
 
 class DFSBProgram:
-    def __init__(self, bprogram_generator, event_list):
+    def __init__(self, bprogram_generator, event_list=None):
         self.bprogram_generator = bprogram_generator
         self.event_list = event_list
 
     def run(self):
-        mapper = {}
-        init = []
-        n = len(self.bprogram_generator().bthreads)
-        ess = self.bprogram_generator().event_selection_strategy
-        for i in range(n):
-            f = lambda: self.bprogram_generator().bthreads[i]
-            dfs = DFSBThread(f, ess, self.event_list)
-            init_s, visited = dfs.run()
-            mapper[i] = visited
-            init.append(init_s)
+        if self.event_list:
+            mapper = {}
+            init = []
+            n = len(self.bprogram_generator().bthreads)
+            ess = self.bprogram_generator().event_selection_strategy
+            for i in range(n):
+                f = lambda: self.bprogram_generator().bthreads[i]
+                dfs = DFSBThread(f, ess, self.event_list)
+                init_s, visited = dfs.run()
+                mapper[i] = visited
+                init.append(init_s)
 
-        init = NodeList(init)
-        visited = []
-        stack = [init]
-        while len(stack):
-            s = stack.pop()
-            if s not in visited:
-                visited.append(s)
+            init = NodeList(init, tuple())
+            visited = []
+            stack = [init]
+            while len(stack):
+                s = stack.pop()
+                if s not in visited:
+                    visited.append(s)
 
-            for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
-                new_s = []
-                for i, bt_s in enumerate(s.nodes):
-                    new_s.append(mapper[i][mapper[i].index(bt_s)].transitions[e])
-                new_s = NodeList(new_s)
-                s.transitions[e] = new_s
-                if new_s not in visited:
-                    stack.append(new_s)
-        return init, visited
+                for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
+                    new_s = []
+                    for i, bt_s in enumerate(s.nodes):
+                        new_s.append(mapper[i][mapper[i].index(bt_s)].transitions[e])
+                    new_s = NodeList(new_s, s.prefix + (e, ))
+                    s.transitions[e] = new_s
+                    if new_s not in visited:
+                        stack.append(new_s)
+            return init, visited
+        else:
+            ess = self.bprogram_generator().event_selection_strategy
+            bprogram = self.bprogram_generator()
+            bprogram.setup()
+            init = NodeList([Node(tuple(), t) for t in self.tickets_without_bt(bprogram.tickets)], tuple())
+            visited = []
+            stack = [init]
+            while len(stack):
+                s = stack.pop()
+                if s not in visited:
+                    visited.append(s)
+
+                for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
+                    bprogram = self.bprogram_generator()
+                    bprogram.setup()
+                    for pre_e in s.prefix:
+                        bprogram.advance_bthreads(bprogram.tickets, pre_e)
+                    bprogram.advance_bthreads(bprogram.tickets, e)
+                    new_s = NodeList([Node(s.prefix + (e,), t) for t in self.tickets_without_bt(bprogram.tickets)], s.prefix + (e,))
+                    s.transitions[e] = new_s
+                    if new_s not in visited:
+                        stack.append(new_s)
+            return init, visited
+
+    @staticmethod
+    def tickets_without_bt(tickets):
+        return [dict([(k, v) for k, v in t.items() if k != 'bt']) for t in tickets]
+
+
 
 
