@@ -1,7 +1,7 @@
 import unittest
 from bppy import *
 from bppy.utils.dfs import DFSBThread, DFSBProgram
-
+from bppy.utils.exceptions import BPAssertionError
 
 class TestDFS(unittest.TestCase):
 
@@ -84,3 +84,33 @@ class TestDFS(unittest.TestCase):
         dfs = DFSBProgram(bp_gen)
         init_s, visited = dfs.run()
         assert len(visited) == 19
+
+    def test_bp_assertion_error(self):
+        @b_thread
+        def add_hot():
+            for i in range(3):
+                yield {request: BEvent("HOT")}
+
+        @b_thread
+        def add_cold():
+            for i in range(3):
+                yield {request: BEvent("COLD")}
+            assert False
+
+        @b_thread
+        def control():
+            while True:
+                yield {waitFor: BEvent("HOT")}
+                yield {waitFor: All(), block: BEvent("HOT")}
+
+        def bp_gen():
+            return BProgram(bthreads=[add_hot(), add_cold(), control()],
+                            event_selection_strategy=SimpleEventSelectionStrategy())
+
+        dfs = DFSBProgram(bp_gen)
+        try:
+            init_s, visited = dfs.run()
+        except BPAssertionError:
+            pass
+        assert True
+

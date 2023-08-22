@@ -1,5 +1,5 @@
 from bppy.model.b_event import BEvent
-
+from bppy.utils.exceptions import BPAssertionError
 
 class Node:
     def __init__(self, prefix, data):
@@ -137,7 +137,10 @@ class DFSBProgram:
                     bprogram.setup()
                     for pre_e in s.prefix:
                         bprogram.advance_bthreads(bprogram.tickets, pre_e)
-                    bprogram.advance_bthreads(bprogram.tickets, e)
+                    try:
+                        bprogram.advance_bthreads(bprogram.tickets, e)
+                    except AssertionError:
+                        raise BPAssertionError("Assertion error in DFSBProgram", s.prefix + (e,))
                     new_s = NodeList([Node(s.prefix + (e,), t) for t in self.tickets_without_bt(bprogram.tickets)], s.prefix + (e,))
                     s.transitions[e] = new_s
                     if new_s not in visited:
