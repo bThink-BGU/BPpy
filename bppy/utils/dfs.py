@@ -86,9 +86,10 @@ class NodeList:
 
 
 class DFSBProgram:
-    def __init__(self, bprogram_generator, event_list=None):
+    def __init__(self, bprogram_generator, event_list=None, max_trace_length=1000):
         self.bprogram_generator = bprogram_generator
         self.event_list = event_list
+        self.max_trace_length = max_trace_length
 
     def run(self):
         if self.event_list:
@@ -143,7 +144,7 @@ class DFSBProgram:
                         raise BPAssertionError("Assertion error in DFSBProgram", s.prefix + (e,))
                     new_s = NodeList([Node(s.prefix + (e,), t) for t in self.tickets_without_bt(bprogram.tickets)], s.prefix + (e,))
                     s.transitions[e] = new_s
-                    if new_s not in visited:
+                    if (new_s not in visited) and (len(new_s.prefix) <= self.max_trace_length):
                         stack.append(new_s)
             return init, visited
 
