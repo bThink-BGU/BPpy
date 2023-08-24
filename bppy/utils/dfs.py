@@ -48,16 +48,29 @@ class DFSBThread:
             return {}
         return s
 
-    def run(self):
+    def run(self, return_requested_and_blocked=False):
         init_s = Node(tuple(), self.get_state(tuple()))
         visited = []
         stack = []
         stack.append(init_s)
+        requested = set()
+        blocked = set()
 
         while len(stack):
             s = stack.pop()
             if s not in visited:
                 visited.append(s)
+            if return_requested_and_blocked:
+                if "request" in s.data:
+                    if isinstance(s.data["request"], BEvent):
+                        requested.add(s.data["request"])
+                    else:
+                        requested.update(s.data["request"])
+                if "block" in s.data:
+                    if isinstance(s.data["block"], BEvent):
+                        blocked.add(s.data["block"])
+                    else:
+                        blocked.update([x for x in self.event_list if x in s.data["block"]])
 
             for e in self.event_list:
                 new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
@@ -66,6 +79,8 @@ class DFSBThread:
                 s.transitions[e] = new_s
                 if new_s not in visited:
                     stack.append(new_s)
+        if return_requested_and_blocked:
+            return init_s, visited, requested, blocked
         return init_s, visited
 
 

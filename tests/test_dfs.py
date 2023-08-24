@@ -23,6 +23,15 @@ class TestDFS(unittest.TestCase):
         dfs = DFSBThread(lambda: add_hot(), SimpleEventSelectionStrategy(), [BEvent("HOT"), BEvent("COLD"), BEvent("Dummy")])
         init_s, visited = dfs.run()
         assert len(visited) == 4
+    def test_hot_rb(self):
+        @b_thread
+        def add_hot():
+            for i in range(3):
+                yield {request: BEvent("HOT")}
+
+        dfs = DFSBThread(lambda: add_hot(), SimpleEventSelectionStrategy(), [BEvent("HOT"), BEvent("COLD"), BEvent("Dummy")])
+        init_s, visited, requested, blocked = dfs.run(return_requested_and_blocked=True)
+        assert len(visited) == 4 and len(requested) == 1 and len(blocked) == 0
 
     def test_control(self):
         @b_thread
