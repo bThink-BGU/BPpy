@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   bppy.analysis
    bppy.execution
    bppy.gym
    bppy.model

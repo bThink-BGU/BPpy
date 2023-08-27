@@ -12,6 +12,14 @@ bppy.utils.dfs module
    :undoc-members:
    :show-inheritance:
 
+bppy.utils.exceptions module
+----------------------------
+
+.. automodule:: bppy.utils.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bppy.utils.z3helper module
 --------------------------
 
