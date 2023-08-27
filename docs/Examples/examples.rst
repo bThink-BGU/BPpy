@@ -11,3 +11,5 @@ Examples
    external_events
    tic_tac_toe_priorities
    bp_gym_env
+   hot_cold_verification
+   dining_philosophers_verification

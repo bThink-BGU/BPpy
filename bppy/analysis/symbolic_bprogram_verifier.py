@@ -1,24 +1,45 @@
 from bppy.utils.dfs import DFSBThread
-from pynusmv.model import *
 from bppy.model.sync_statement import request, block, waitFor
 from bppy.model.b_event import BEvent
 from bppy.model.event_selection.simple_event_selection_strategy import SimpleEventSelectionStrategy
 import sys
-import pynusmv
-from pynusmv import prop
-from pynusmv.mc import check_ltl_spec, check_explain_ltl_spec
-from pynusmv.bmc.glob import bmc_setup, BmcSupport, master_be_fsm
-from pynusmv.parser import parse_ltl_spec
-from pynusmv.node import Node
-from pynusmv.sat import SatSolverFactory, Polarity, SatSolverResult
-from pynusmv.bmc import ltlspec, utils as bmcutils
-import time
-import tracemalloc
 import tempfile
+try:
+    import pynusmv
+    from pynusmv.model import *
+    from pynusmv.mc import check_ltl_spec, check_explain_ltl_spec
+    from pynusmv.bmc.glob import bmc_setup, BmcSupport, master_be_fsm
+    from pynusmv.parser import parse_ltl_spec
+    from pynusmv.node import Node
+    from pynusmv.sat import SatSolverFactory, Polarity, SatSolverResult
+    from pynusmv.bmc import ltlspec, utils as bmcutils
+except ImportError:
+    raise ImportError("PyNuSMV is not installed. Please install it to use SymbolicBProgramVerifier. More info on "
+                      "PyNuSMV installation can be found at https://github.com/LouvainVerificationLab/pynusmv")
 
 
 class SymbolicBProgramVerifier:
+    """
+    A class to verify a behavioral program symbolically using `PyNuSMV`. The verifier can operate in two modes:
+    Binary Decision Diagrams (BDD) and SAT-based Bounded Model Checking (BMC).
 
+    *Note:*
+
+    1. The class requires the installation of `PyNuSMV`. More info on its installation can be found at `https://github.com/LouvainVerificationLab/pynusmv
+    <https://github.com/LouvainVerificationLab/pynusmv>`_.
+
+    2. The verifier is currently limited to b-programs with :class:`SimpleEventSelectionStrategy
+    <bppy.model.event_selection.event_selection_strategy.SimpleEventSelectionStrategy>`.
+
+    3. The verifier does not support events with data.
+
+    Attributes:
+    -----------
+    bprogram_generator : function
+        A function that generates a new instance of the BProgram.
+    event_list : list
+        List of all possible events in the system.
+    """
     def __init__(self, bprogram_generator, event_list):
         self.bprogram_generator = bprogram_generator
         self.event_list = event_list
@@ -26,6 +47,31 @@ class SymbolicBProgramVerifier:
         sys.setrecursionlimit(10000)
 
     def verify(self, spec, type="BDD", bound=1000, find_counterexample=False, print_info=False):
+        """
+        Verifies a given specification against the behavioral program.
+
+        Parameters:
+        -----------
+        spec : str
+            The specification to be verified, in `NuSMV <https://nusmv.fbk.eu/>`_ LTL specification format.
+        type : str, optional
+            The verification type to be used: Binary Decision Diagrams ("BDD") or SAT-based Bounded Model Checking ("BMC").
+            Default is "BDD".
+        bound : int, optional
+            For BMC, the maximum number of steps to be considered. Default is 1000.
+        find_counterexample : bool, optional
+            If True and a specification violation is found, a counterexample is produced.
+            Default is False.
+        print_info : bool, optional
+            If True, information about the verification process is printed. Default is False.
+
+        Returns:
+        --------
+        bool:
+            True if the specification is satisfied, False otherwise.
+        Optional[str]:
+            A counterexample, if one exists and find_counterexample is True. Otherwise, None.
+        """
         if print_info:
             print("initializing NuSMV")
         pynusmv.init.init_nusmv()
@@ -49,7 +95,7 @@ class SymbolicBProgramVerifier:
                 f.write("\n")
             f.write(str(main))
             f.write("\n")
-            f.write("LTLSPEC " + str(spec))
+            f.write("LTLSPEC " + str(spec).strip())
         pynusmv.glob.load_from_file(temp_dir.name + "/bp_model.smv")
 
         if type == "BMC":
@@ -80,12 +126,12 @@ class SymbolicBProgramVerifier:
                         print("Finding counterexample")
                     cnt_ex = bmcutils.generate_counter_example(fsm, problem, solver, bound, "Violation")
                     explanation_str = ""
-                    first_loop_siganl = False
+                    first_loop_signal = False
                     for step in cnt_ex:
                         if step.is_loopback:
-                            if first_loop_siganl:
+                            if first_loop_signal:
                                 break
-                            first_loop_siganl = True
+                            first_loop_signal = True
                             explanation_str += "-- Loop starts here" + "\n"
                         for symbol, value in step:
                             if str(symbol) == "event":
@@ -105,13 +151,16 @@ class SymbolicBProgramVerifier:
             #fsm = pynusmv.glob.prop_database().master.bddFsm
             result = check_ltl_spec(spec)
             if not result and find_counterexample:
-                from pynusmv.mc import explain, eval_ctl_spec
                 if print_info:
                     print("Finding counterexample")
                 _, explanation = check_explain_ltl_spec(spec)
                 explanation_str = ""
+                first_loop_signal = False
                 for state in explanation[2:-1:2]:
                     if state == explanation[2::2][-1]:
+                        if first_loop_signal:
+                            break
+                        first_loop_signal = True
                         explanation_str += "-- Loop starts here" + "\n"
                     explanation_str += state["event"] + "\n"
             else:
