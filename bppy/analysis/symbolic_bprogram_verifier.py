@@ -4,7 +4,18 @@ from bppy.model.b_event import BEvent
 from bppy.model.event_selection.simple_event_selection_strategy import SimpleEventSelectionStrategy
 import sys
 import tempfile
-
+try:
+    import pynusmv
+    from pynusmv.model import *
+    from pynusmv.mc import check_ltl_spec, check_explain_ltl_spec
+    from pynusmv.bmc.glob import bmc_setup, BmcSupport, master_be_fsm
+    from pynusmv.parser import parse_ltl_spec
+    from pynusmv.node import Node
+    from pynusmv.sat import SatSolverFactory, Polarity, SatSolverResult
+    from pynusmv.bmc import ltlspec, utils as bmcutils
+except ImportError:
+    raise ImportError("PyNuSMV is not installed. Please install it to use SymbolicBProgramVerifier. More info on "
+                      "PyNuSMV installation can be found at https://github.com/LouvainVerificationLab/pynusmv")
 
 
 class SymbolicBProgramVerifier:
@@ -33,7 +44,6 @@ class SymbolicBProgramVerifier:
         self.bprogram_generator = bprogram_generator
         self.event_list = event_list
         self.bthread_num = len(self.bprogram_generator().bthreads)
-        self._import_package()
         sys.setrecursionlimit(10000)
 
     def verify(self, spec, type="BDD", bound=1000, find_counterexample=False, print_info=False):
@@ -62,13 +72,6 @@ class SymbolicBProgramVerifier:
         Optional[str]:
             A counterexample, if one exists and find_counterexample is True. Otherwise, None.
         """
-        import pynusmv
-        from pynusmv.mc import check_ltl_spec, check_explain_ltl_spec
-        from pynusmv.bmc.glob import bmc_setup, BmcSupport, master_be_fsm
-        from pynusmv.parser import parse_ltl_spec
-        from pynusmv.node import Node
-        from pynusmv.sat import SatSolverFactory, Polarity, SatSolverResult
-        from pynusmv.bmc import ltlspec, utils as bmcutils
         if print_info:
             print("initializing NuSMV")
         pynusmv.init.init_nusmv()
@@ -172,7 +175,6 @@ class SymbolicBProgramVerifier:
         return result, explanation_str
 
     def _bthread_to_module(self, bthread_generator, bthread_name, event_list):
-        from pynusmv.model import Identifier, Var, Range, Boolean, Trueexp, Falseexp, Case, And, Or, Module
 
         dfs = DFSBThread(bthread_generator, SimpleEventSelectionStrategy(), event_list)
         init_s, visited, requested, blocked = dfs.run(return_requested_and_blocked=True)
@@ -257,8 +259,6 @@ class SymbolicBProgramVerifier:
         return type(bthread_name, (Module,), bt1_mod_dict)
 
     def _main_module(self, event_list, bt_list):
-        import pynusmv
-        from pynusmv.model import Var, Trueexp, Falseexp, Case, And, Or, Module, Scalar, Implies, NotEqual, Equal
         mod_dict = {}
         mod_dict["event"] = Var(Scalar(tuple(["BPROGRAM_START", "BPROGRAM_DONE"] + [x.name for x in event_list])))
         bt_modules = []
@@ -295,11 +295,3 @@ class SymbolicBProgramVerifier:
         trans_statement = And(trans_statement, Implies(Equal("event", "BPROGRAM_DONE"), Equal("next(event)", "BPROGRAM_DONE")))
         mod_dict["TRANS"] = [trans_statement]
         return type("main", (Module,), mod_dict)
-
-    def _import_package(self):
-        try:
-            import pynusmv
-        except ImportError:
-            print("PyNuSMV is not installed. Please install it to use SymbolicBProgramVerifier. More info on ")
-            print("PyNuSMV installation can be found at https://github.com/LouvainVerificationLab/pynusmv")
-            sys.exit(0)
