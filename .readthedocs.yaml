@@ -11,6 +11,9 @@ build:
     python: "3.9"
   apt_packages:
     - swig
+    - flex
+    - bison
+    - patchelf
 
 python:
   install:
