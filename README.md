@@ -22,6 +22,12 @@ pip install --upgrade pip
 
 before submitting an issue.
 
+In case you want to get started instantly and use ``bppy`` (with ``pynusmv`` and all dependencies) without installing it, you can use the [docker image](https://hub.docker.com/r/tomyaacov/bppy-docker):
+
+```shell
+docker run -it tomyaacov/bppy-docker
+```
+
 
 ## Documentation
 * [BPpy documentation](https://bppy.readthedocs.io/en/latest/)

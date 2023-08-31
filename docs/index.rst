@@ -33,6 +33,13 @@ If installation is not working, you can try upgrading pip:
 
 before submitting an issue.
 
+In case you want to get started instantly and use ``bppy`` (with ``pynusmv`` and all dependencies) without installing it, you can use the `docker image <https://hub.docker.com/r/tomyaacov/bppy-docker>`_:
+
+.. code-block:: shell
+
+   docker run -it tomyaacov/bppy-docker
+
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents
