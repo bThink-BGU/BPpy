@@ -120,12 +120,12 @@ class DFSBProgram:
                 init.append(init_s)
 
             init = NodeList(init, tuple())
-            visited = []
+            visited = set()
             stack = [init]
             while len(stack):
                 s = stack.pop()
                 if s not in visited:
-                    visited.append(s)
+                    visited.add(s)
 
                 for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
                     new_s = []
@@ -135,18 +135,21 @@ class DFSBProgram:
                     s.transitions[e] = new_s
                     if new_s not in visited:
                         stack.append(new_s)
+            visited = list(visited)
+            visited.remove(init)
+            visited.insert(0, init)
             return init, visited
         else:
             ess = self.bprogram_generator().event_selection_strategy
             bprogram = self.bprogram_generator()
             bprogram.setup()
             init = NodeList([Node(tuple(), t) for t in self.tickets_without_bt(bprogram.tickets)], tuple())
-            visited = []
+            visited = set()
             stack = [init]
             while len(stack):
                 s = stack.pop()
                 if s not in visited:
-                    visited.append(s)
+                    visited.add(s)
 
                 for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
                     bprogram = self.bprogram_generator()
@@ -161,6 +164,9 @@ class DFSBProgram:
                     s.transitions[e] = new_s
                     if (new_s not in visited) and (len(new_s.prefix) <= self.max_trace_length):
                         stack.append(new_s)
+            visited = list(visited)
+            visited.remove(init)
+            visited.insert(0, init)
             return init, visited
 
     @staticmethod
