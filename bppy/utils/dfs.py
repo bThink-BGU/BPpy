@@ -106,7 +106,7 @@ class DFSBProgram:
         self.event_list = event_list
         self.max_trace_length = max_trace_length
 
-    def run(self):
+    def run(self, explore_graph=True):
         if self.event_list:
             mapper = {}
             init = []
@@ -118,6 +118,9 @@ class DFSBProgram:
                 init_s, visited = dfs.run()
                 mapper[i] = visited
                 init.append(init_s)
+
+            if not explore_graph:
+                return init, mapper 
 
             init = NodeList(init, tuple())
             visited = set()
