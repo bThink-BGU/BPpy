@@ -17,7 +17,7 @@ def add_cold():  # requests "COLD" three times
 
 @b_thread
 def add_random():
-	yield {request: [BEvent("X"), BEvent("Y")], distribution: [0.1, 0.2]}
+	yield {request: [BEvent("X"), BEvent("Y")]}
 
 @b_thread
 def control():
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
 	def bp_gen():
 		return bp.BProgram(bthreads=[add_hot(), add_cold(), add_random(), control()],
-						event_selection_strategy=bp.SimpleEventSelectionStrategy(),
+						event_selection_strategy=bp.ProbabilisticEventSelectionStrategy(),
 						listener=bp.PrintBProgramRunnerListener())
 	prog = bp_gen()
 	prog.run()
