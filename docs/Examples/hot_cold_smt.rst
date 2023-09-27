@@ -9,3 +9,10 @@ Upon collecting all constraints, the new execution mechanism invokes the Z3 SMT 
 The assignment is then returned by the :code:`yield` command of the b-thread.
 
 .. literalinclude :: ../../examples/hot_cold_smt.py
+
++++++++++++++++++++++++++
+Integrating other solvers
++++++++++++++++++++++++++
+The z3-solver package has support for SMTLIB formatting.
+Thus, integrating other solvers can be done by implementing a new event selection strategy that formats the queries using the :code:`to_smt2` method of  :code:`z3.z3.Solver` and runs the desired solver.
+More information about the formatting can be found in the `Z3 documentation <https://z3prover.github.io/api/html/namespacez3py.html>`_.

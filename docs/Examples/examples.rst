@@ -13,3 +13,4 @@ Examples
    bp_gym_env
    hot_cold_verification
    dining_philosophers_verification
+   sokoban
