@@ -9,3 +9,9 @@ For developers seeking to tailor observation space to specific needs, alternativ
 The Reward computation at each state is determined through a function that receives the reward statements from all b-threads. The default approach calculates the total reward at each yield point by summing the individual rewards from all active b-threads.
 
 .. literalinclude :: ../../examples/bp_gym_env.py
+
+Note that not all events are necessarily considered actions.
+This distinction enables discernment between controllable and uncontrollable program behaviors.
+For instance, the following b-program implements the `frozen lake environment <https://gymnasium.farama.org/environments/toy_text/frozen_lake>`_:
+
+.. literalinclude :: ../../examples/frozen_lake_env.py

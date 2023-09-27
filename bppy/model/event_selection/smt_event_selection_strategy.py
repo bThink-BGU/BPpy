@@ -6,11 +6,12 @@ class SMTEventSelectionStrategy(SolverBasedEventSelectionStrategy):
     """
     A solver-based implementation of EventSelectionStrategy using z3 SMT solver. The strategy used is the one
     presented in the paper `Executing Scenario-Based Specification with Dynamic Generation of Rich Events
-    <https://www.wisdom.weizmann.ac.il/~dharel/papers/CCIS2019RichEvents.pdf>`_.
+    <https://www.wisdom.weizmann.ac.il/~dharel/papers/CCIS2019RichEvents.pdf>`_, with the difference that
+    b-threads are continued if the selected assignment is either requested or waited for.
+    For the original strategy, see :class:`RichEventSelectionStrategy<bppy.model.event_selection.rich_event_selection_strategy.RichEventSelectionStrategy>`.
     """
-
     def is_satisfied(self, event, statement):
-        return is_true(event.eval(statement.get('waitFor', true)))  
+        return is_true(event.eval(statement.get('waitFor', false)) or event.eval(statement.get('request', false)))
 
     # TODO: implement a way to set additional_statement
     def select(self, statements, additional_statement=None):

@@ -29,7 +29,7 @@ class TestGym(unittest.TestCase):
                             event_selection_strategy=SimpleEventSelectionStrategy())
 
         env = BPEnv(bprogram_generator=init_bprogram,
-                    event_list=[BEvent("HOT"), BEvent("COLD"), BEvent("DONE")])
+                    action_list=[BEvent("HOT"), BEvent("COLD"), BEvent("DONE")])
 
         state, _ = env.reset()
         assert (state == np.asarray([0, 0, 0])).all()
