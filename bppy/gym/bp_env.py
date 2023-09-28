@@ -139,6 +139,12 @@ class BPEnv(gym.Env):
         """
         self.bprogram = None
 
+    def get_state(self):
+        """
+        Returns the current state of the environment.
+        """
+        return self._state()
+
     def _bthreads_states(self):
         return [dict([k, v] for k, v in statement.items() if k != "bt") for statement in self.bprogram.tickets]
 
