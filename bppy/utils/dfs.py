@@ -1,5 +1,6 @@
 from bppy.model.b_event import BEvent
 from bppy.utils.exceptions import BPAssertionError
+from distributions import Categorical
 
 class Node:
     def __init__(self, prefix, data):

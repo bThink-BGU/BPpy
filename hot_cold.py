@@ -17,7 +17,8 @@ def add_cold():  # requests "COLD" three times
 
 @b_thread
 def add_random():
-	yield {request: [BEvent("X"), BEvent("Y")], distribution: [0.1, 0.2]}
+	which_var = yield Dist.Categorical({'X': 0.5, 'Y': 0.5})
+	yield {request: [BEvent("X"), BEvent("Y")]}
 
 @b_thread
 def control():

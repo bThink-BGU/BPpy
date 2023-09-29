@@ -1,5 +1,5 @@
 from copy import copy
-
+from bppy_to_prism import Categorical
 
 def b_thread(func):
     """
@@ -12,7 +12,10 @@ def b_thread(func):
             while True:
                 try:
                     e = f.send(m)
-                    if isinstance(e, dict):
+                    if isinstance(e, Categorical):
+                        sample = e.sample()
+                        e = f.send(sample)
+                    elif isinstance(e, dict):
                         e["locals"] = copy(f.gi_frame.f_locals)
                     m = yield e
                     if m is None:
