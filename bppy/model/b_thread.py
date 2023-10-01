@@ -12,11 +12,10 @@ def b_thread(func):
             while True:
                 try:
                     e = f.send(m)
-                    if isinstance(e, Categorical):
-                        sample = e.sample()
-                        e = f.send(sample)
-                    elif isinstance(e, dict):
-                        e["locals"] = copy(f.gi_frame.f_locals)
+                    if isinstance(e, dict):
+                        local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()
+                                        if not isinstance(val, Categorical)} # don't copy distribution objs
+                        e["locals"] = local_vars
                     m = yield e
                     if m is None:
                         break

@@ -11,7 +11,7 @@ class BEvent:
     dist : Categorical
         A distribution object on possible, mutually exclusive events.
     """
-    def __init__(self, name="", data={}, dist={}):
+    def __init__(self, name="", data={}, dist=None):
         """
         Constructs all the necessary attributes for the BEvent object.
 
@@ -29,7 +29,7 @@ class BEvent:
         self.dist = dist
 
     def __key(self):
-        return tuple([self.name]) + tuple(str(self.data.items())) + tuple(str(self.data.dist()))
+        return tuple([self.name]) + tuple(str(self.data.items())) + tuple([self.__dist_repr__])
 
     def __hash__(self):
         return hash(self.__key())
@@ -37,8 +37,14 @@ class BEvent:
     def __eq__(self, other):
         return isinstance(other, BEvent) and self.__key() == other.__key()
 
+    def __dist_repr__(self):
+        dist_str = 'c'
+        if self.dist:
+            dist_str = str(self.dist.pdf.items())
+        return dist_str
+
     def __repr__(self):
-        return "{}(name={},data={},dist={})".format(self.__class__.__name__, self.name, self.data, self.dist)
+        return "{}(name={},data={},dist={})".format(self.__class__.__name__, self.name, self.data, self.__dist_repr__())
 
     def __str__(self):
         return self.__repr__()
