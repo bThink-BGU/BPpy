@@ -23,6 +23,13 @@ class Node:
     def get_key(self):
         return self.__key()
 
+    def has_distribution(self):
+        if "request" in self.data and self.data["request"].dist:
+            return True
+        if "block" in self.data and self.data["block"].dist:
+            return True
+        return False
+
 
 class DFSBThread:
     def __init__(self, bthread_gen, ess, event_list):
@@ -36,6 +43,7 @@ class DFSBThread:
         for e in prefix:
             if s is None:
                 break
+            # todo: add dist block
             if 'block' in s:
                 if isinstance(s.get('block'), BEvent):
                     if e == s.get('block'):
@@ -61,6 +69,23 @@ class DFSBThread:
             s = stack.pop()
             if s not in visited:
                 visited.append(s)
+                if s.has_distribution():
+                    if "request" in s.data and s.data["request"].dist:
+                        for e_name in s.data["request"].dist.keys():
+                            e_obj = BEvent(e_name)
+                            new_s = Node(s.prefix + (e_obj,), self.get_state(s.prefix + (e_obj,)))
+                            if new_s.data is None:
+                                continue
+                            s.transitions[e_obj] = new_s
+                            stack.append(new_s)
+                    if "block" in s.data and s.data["block"]:
+                        for e_name in s.data["block"].dist.keys():
+                            e_obj = BEvent(e_name)
+                            new_s = Node(s.prefix + (e_obj,), self.get_state(s.prefix + (e_obj,)))
+                            if new_s.data is None:
+                                continue
+                            s.transitions[e_obj] = new_s
+                            stack.append(new_s)
             if return_requested_and_blocked:
                 if "request" in s.data:
                     if isinstance(s.data["request"], BEvent):
@@ -72,14 +97,15 @@ class DFSBThread:
                         blocked.add(s.data["block"])
                     else:
                         blocked.update([x for x in self.event_list if x in s.data["block"]])
-
-            for e in self.event_list:
-                new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
-                if new_s.data is None:
-                    continue
-                s.transitions[e] = new_s
-                if new_s not in visited:
-                    stack.append(new_s)
+            if not s.has_distribution():
+                for e in self.event_list:
+                    # need to stop running dist nodes
+                    new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
+                    if new_s.data is None:
+                        continue
+                    s.transitions[e] = new_s
+                    if new_s not in visited:
+                        stack.append(new_s)
         if return_requested_and_blocked:
             return init_s, visited, requested, blocked
         return init_s, visited
