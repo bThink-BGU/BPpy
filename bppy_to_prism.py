@@ -3,7 +3,7 @@ from bppy.model.event_set import EventSet
 from bppy.utils.dfs import DFSBProgram
 from bppy.utils.exceptions import BPAssertionError
 from collections.abc import Iterable
-from distributions import Categorical
+from probabilities import Choice
 
 
 # adjusting https://github.com/bThink-BGU/BPpy/blob/master/bppy/utils/dfs.py

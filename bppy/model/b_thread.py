@@ -1,5 +1,5 @@
 from copy import copy
-from bppy_to_prism import Categorical
+from probabilities import Choice
 
 def b_thread(func):
     """
@@ -12,9 +12,11 @@ def b_thread(func):
             while True:
                 try:
                     e = f.send(m)
+                    if isinstance(e, Choice):
+                        m = e.sample()
+                        e = f.send(m)
                     if isinstance(e, dict):
-                        local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()
-                                        if not isinstance(val, Categorical)} # don't copy distribution objs
+                        local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()}
                         e["locals"] = local_vars
                     m = yield e
                     if m is None:
