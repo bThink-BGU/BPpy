@@ -1,7 +1,7 @@
 from os import listdir
 from os.path import dirname, basename, isfile, join, isdir
 
-__version__ = '0.0.9'
+__version__ = '0.0.10'
 # TODO: find a smarter way to import al submodules
 from bppy.execution.listeners.b_program_runner_listener import *
 from bppy.execution.listeners.print_b_program_runner_listener import *
@@ -11,6 +11,7 @@ from bppy.model.event_selection.solver_based_event_selection_strategy import *
 from bppy.model.event_selection.smt_event_selection_strategy import *
 from bppy.model.event_selection.experimental_smt_event_selection_strategy import *
 from bppy.model.event_selection.priority_based_event_selection_strategy import *
+from bppy.model.event_selection.rich_event_selection_strategy import *
 from bppy.model.b_event import *
 from bppy.model.bprogram import *
 from bppy.model.event_set import *

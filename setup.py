@@ -20,7 +20,8 @@ gym_dependencies = [
 develop_dependencies = [
     "Sphinx>=5.3.0",
     "sphinx-rtd-theme>=1.2.1",
-    "graphviz>=0.20.1"
+    "graphviz>=0.20.1",
+    "pygame>=2.1.2"
 ]
 
 setuptools.setup(

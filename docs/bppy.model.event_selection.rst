@@ -28,6 +28,14 @@ bppy.model.event\_selection.priority\_based\_event\_selection\_strategy module
    :undoc-members:
    :show-inheritance:
 
+bppy.model.event\_selection.rich\_event\_selection\_strategy module
+-------------------------------------------------------------------
+
+.. automodule:: bppy.model.event_selection.rich_event_selection_strategy
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bppy.model.event\_selection.simple\_event\_selection\_strategy module
 ---------------------------------------------------------------------
 

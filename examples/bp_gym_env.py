@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     # initialize environment with the defined b-program generator, observation space, and reward function
     env = BPEnv(bprogram_generator=init_bprogram,
-                event_list=event_list,
+                action_list=event_list,  # all program events are considered as possible actions for the agent
                 observation_space=SimpleBPObservationSpace(init_bprogram, event_list),
                 reward_function=lambda rewards: sum(filter(None, rewards)))
 
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     state, _ = env.reset()
     print(state)
     terminated = False
-    while not terminated:  # loop until the environment (b-program) terminats
+    while not terminated:  # loop until the environment (b-program) terminates
         action = env.action_space.sample()  # sample an action
         print(action)
         state, reward, terminated, _, info = env.step(action)  # take a step with the sampled action
