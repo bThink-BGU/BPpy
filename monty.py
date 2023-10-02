@@ -3,16 +3,15 @@ from bppy import BEvent
 from bppy.model.sync_statement import *
 from bppy.model.b_thread import b_thread
 from bppy_to_prism import prism_converter
-from distributions import Categorical
+from probabilities import Choice
 
 
 
 @b_thread
 def host():
-	yield {request: BEvent('init')}
-	hide = Categorical({'h1': 0.33, 'h2': 0.33, 'h3': 0.33})
-	yield {request: BEvent('hide', dist=hide)}
-	guess = Categorical('hide', {'g1': 0.33, 'g2': 0.33, 'g3': 0.33})
+	hide = yield Choice({1: 0.33, 2: 0.33, 3: 0.33})
+	yield {request: BEvent(f'h{hide}')}
+	guess = yield Choice({1: 0.33, 2: 0.33, 3: 0.33})
 	yield {request: BEvent(guess)}
 	# h = yield {request: [BEvent(f"h{i}") for i in range(1, 4)]}
 	# g = yield {request: [BEvent(f"g{i}") for i in range(1, 4)]}
