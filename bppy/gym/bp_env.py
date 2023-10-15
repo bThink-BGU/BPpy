@@ -152,7 +152,7 @@ class BPEnv(gym.Env):
         return self.observation_space.bp_state_to_gym_space(self._bthreads_states())
 
     def _bthreads_rewards(self):
-        return [x.get("reward") for x in self.bprogram.tickets]
+        return [x.get("localReward") for x in self.bprogram.tickets]
 
     def _reward(self):
         return self.reward_function(self._bthreads_rewards())
