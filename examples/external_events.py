@@ -1,46 +1,46 @@
-from bppy import *
+import bppy as bp
 
 
 # define an external event class
-class External(BEvent):
+class External(bp.BEvent):
     pass
 
 
 # define an internal event class
-class Internal(BEvent):
+class Internal(bp.BEvent):
     pass
 
 
 # define idle event class
-class Idle(BEvent):
+class Idle(bp.BEvent):
     def __init__(self):
         super().__init__("IDLE")
 
 
 # define the set of external and internal events
-any_external = EventSet(lambda event: isinstance(event, External))
-any_internal = EventSet(lambda event: isinstance(event, Internal))
+any_external = bp.EventSet(lambda event: isinstance(event, External))
+any_internal = bp.EventSet(lambda event: isinstance(event, Internal))
 
 
-@b_thread
+@bp.thread
 def worker():
     # waits for external job event and then operates on it
     while True:
-        event = yield {waitFor: any_external}
+        event = yield bp.sync(waitFor=any_external)
         # do something with the external job event
-        yield {request: Internal("Done processing job " + event.name)}
+        yield bp.sync(request=Internal("Done processing job " + event.name))
 
 
-@b_thread
+@bp.thread
 def manager():
     # waits for internal events and then declares that the system is idle
     while True:
-        yield {request: Idle()}
-        yield {waitFor: any_internal}
+        yield bp.sync(request=Idle())
+        yield bp.sync(waitFor=any_internal)
 
 
 # define a listener that submits jobs to the bprogram when idle
-class JobsListener(PrintBProgramRunnerListener):
+class JobsListener(bp.PrintBProgramRunnerListener):
     def __init__(self):
         super().__init__()
         self.jobs = ["A", "B", "C"]
@@ -53,7 +53,7 @@ class JobsListener(PrintBProgramRunnerListener):
 
 
 if __name__ == "__main__":
-    b_program = BProgram(bthreads=[worker(), manager()],
-                         event_selection_strategy=SimpleEventSelectionStrategy(),
-                         listener=JobsListener())
+    b_program = bp.BProgram(bthreads=[worker(), manager()],
+                            event_selection_strategy=bp.SimpleEventSelectionStrategy(),
+                            listener=JobsListener())
     b_program.run()

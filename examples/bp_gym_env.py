@@ -1,26 +1,24 @@
 import bppy as bp
-from bppy.model.sync_statement import *
-from bppy.model.b_thread import b_thread
 from bppy.gym import *
 import numpy as np
 
-@b_thread
+@bp.thread
 def add_hot():  # request hot 5 times, and specify a reward
     for i in range(5):
-        yield {request: bp.BEvent("HOT"), localReward: -0.01}
-    yield {waitFor: bp.All(), localReward: 1}
+        yield bp.sync(request=bp.BEvent("HOT"), localReward=-0.01)
+    yield bp.sync(waitFor=bp.All(), localReward=1)
 
-@b_thread
+@bp.thread
 def add_cold():  # request cold 5 times
     for i in range(5):
-        yield {request: bp.BEvent("COLD")}
+        yield bp.sync(request=bp.BEvent("COLD"))
 
 
-@b_thread
+@bp.thread
 def control():  # blocks HOT from occurring twice in a row
     while True:
-        yield {waitFor: bp.BEvent("HOT")}
-        yield {waitFor: bp.BEvent("COLD"), block: bp.BEvent("HOT")}
+        yield bp.sync(waitFor=bp.BEvent("HOT"))
+        yield bp.sync(block=bp.BEvent("HOT"), waitFor=bp.BEvent("COLD"))
 
 
 def init_bprogram():  # function to initialize the b-program with the defined b-threads

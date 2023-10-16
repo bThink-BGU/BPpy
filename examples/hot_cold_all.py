@@ -1,33 +1,33 @@
-from bppy import *
+import bppy as bp
 
 
-@b_thread
+@bp.thread
 def add_hot():  # requests "HOT" three times
-    yield {request: BEvent("HOT")}
-    yield {request: BEvent("HOT")}
-    yield {request: BEvent("HOT")}
+    yield bp.sync(request=bp.BEvent("HOT"))
+    yield bp.sync(request=bp.BEvent("HOT"))
+    yield bp.sync(request=bp.BEvent("HOT"))
 
 
-@b_thread
+@bp.thread
 def add_cold():  # requests "COLD" three times
-    yield {request: BEvent("COLD")}
-    yield {request: BEvent("COLD")}
-    yield {request: BEvent("COLD")}
+    yield bp.sync(request=bp.BEvent("COLD"))
+    yield bp.sync(request=bp.BEvent("COLD"))
+    yield bp.sync(request=bp.BEvent("COLD"))
 
 
-@b_thread
+@bp.thread
 def control_temp():
     # This b-thread controls the temperature by blocking the previously selected event
     # and waiting for all other events in each iteration of its loop
-    e = BEvent("Dummy")
+    e = bp.BEvent("Dummy")
     while True:
-        e = yield {waitFor: All(), block: e}
+        e = yield bp.sync(waitFor=bp.All(), block=e)
 
 
 if __name__ == "__main__":
     # Create a BProgram with the defined b-threads, SimpleEventSelectionStrategy,
     # and a listener to print selected events
-    b_program = BProgram(bthreads=[add_hot(), add_cold(), control_temp()],
-                         event_selection_strategy=SimpleEventSelectionStrategy(),
-                         listener=PrintBProgramRunnerListener())
-    b_program.run()   # Execute the b-program
+    b_program = bp.BProgram(bthreads=[add_hot(), add_cold(), control_temp()],
+                            event_selection_strategy=bp.SimpleEventSelectionStrategy(),
+                            listener=bp.PrintBProgramRunnerListener())
+    b_program.run()  # Execute the b-program
