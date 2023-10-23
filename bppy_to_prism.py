@@ -78,7 +78,9 @@ def prism_converter(bprogram_generator, event_list, bt_names):
 					bt_trans[n][e] = (node_to_s[node.transitions[events[e]]] if
 									events[e] in node.transitions else n)
 			if isinstance(node.data, Choice):
-				bt_probs[n] = node.data
+				bt_probs[n] = {rand_choice: (node_to_s[node.transitions[rand_choice][0]],
+											 node.transitions[rand_choice][1])
+									for rand_choice in node.data.keys()}
 
 		module_template = '\nmodule {}\n\t{}\n\n\t{}\nendmodule\n'
 		state_template = "formula is_{}_{}_{} = {};"
@@ -106,8 +108,8 @@ def prism_converter(bprogram_generator, event_list, bt_names):
 		
 		probabilities = []
 		for n, choice in bt_probs.items():
-			string_prob = [prob_format.format(p, state_name, next_node)
-							for next_node, p in choice.items()]
+			string_prob = [prob_format.format(p, state_name, next_state)
+							for next_state, p in choice.values()]
 			probabilities.append(prob_transition.format(state_name, n,
 								' + '.join(string_prob)))
 

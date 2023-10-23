@@ -11,7 +11,7 @@ from probabilities import Choice
 def host():
 	hide = yield Choice({1: 0.33, 2: 0.33, 3: 0.33})
 	yield BSync({request: BEvent(f'h{hide}')})
-	guess = yield Choice({1: 0.34, 2: 0.33, 3: 0.33})
+	guess = yield Choice({1: 0.33, 2: 0.33, 3: 0.33})
 	yield BSync({request: BEvent(f'g{guess}')})
 	# h = yield {request: [BEvent(f"h{i}") for i in range(1, 4)]}
 	# g = yield {request: [BEvent(f"g{i}") for i in range(1, 4)]}

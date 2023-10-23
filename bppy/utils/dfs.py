@@ -10,6 +10,8 @@ class Node:
         self.transitions = {}
 
     def __key(self):
+        if isinstance(self.data, Choice):
+            return str(self.data._id)
         return str(self.data)
 
     def __hash__(self):
