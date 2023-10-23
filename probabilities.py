@@ -1,8 +1,8 @@
 import random
 
-class Choice:
-	def __init__(self, weights):
-		self.weights = weights
+class Choice(dict): #add unique id
+	def options(self):
+		return list(self.keys())
 
 	def sample(self):
-		return random.choices(list(self.weights.keys()), self.weights.values(), k=1)[0]
+		return random.choices(list(self.keys()), self.values(), k=1)[0]

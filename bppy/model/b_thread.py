@@ -1,4 +1,5 @@
-from copy import copy
+from copy import copy, deepcopy
+from bppy.model.sync_statement import BSync
 from probabilities import Choice
 
 def b_thread(func):
@@ -12,12 +13,9 @@ def b_thread(func):
             while True:
                 try:
                     e = f.send(m)
-                    if isinstance(e, Choice):
-                        m = e.sample()
-                        e = f.send(m)
-                    if isinstance(e, dict):
+                    if isinstance(e, BSync):
                         local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()}
-                        e["locals"] = local_vars
+                        e["locals"] = copy(local_vars)
                     m = yield e
                     if m is None:
                         break

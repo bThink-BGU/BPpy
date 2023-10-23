@@ -33,7 +33,7 @@ class BEvent:
         return isinstance(other, BEvent) and self.__key() == other.__key()
 
     def __repr__(self):
-        return "{}(name={},data={},dist={})".format(self.__class__.__name__, self.name, self.data)
+        return "{}(name={},data={})".format(self.__class__.__name__, self.name, self.data)
 
     def __str__(self):
         return self.__repr__()

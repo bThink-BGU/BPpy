@@ -1,5 +1,6 @@
 from bppy.model.b_event import BEvent
 from bppy.model.event_set import EventSet
+from bppy.model.sync_statement import BSync
 from bppy.utils.dfs import DFSBProgram
 from bppy.utils.exceptions import BPAssertionError
 from collections.abc import Iterable
@@ -22,7 +23,7 @@ def prism_converter(bprogram_generator, event_list, bt_names):
 	rule_template = "formula is_{}_{} = {};"
 	bt_condition = "(is_{}_{}_{}={})"
 
-	header = 'dtmc\n\n'
+	header = 'mdp\n\n'
 
 	req = [rule_template.format(e, "requested",
 			' | '.join([bt_condition.format(bt,'requesting',e,'true')
@@ -54,32 +55,38 @@ def prism_converter(bprogram_generator, event_list, bt_names):
 		bt_req = {e: [] for e in event_names}
 		bt_block = {e: [] for e in event_names}
 		bt_trans = {}
+		bt_probs = {}
 
 		for node, n in node_to_s.items():
-			bt_trans[n] = {}
-			for e in event_names:
-				if ('request' in node.data):
-					if (isinstance(node.data['request'], Iterable) and
-							events[e] in node.data['request']):
-						bt_req[e].append(n)
-					elif (isinstance(node.data['request'], BEvent) and
-							events[e] == node.data['request']):
-						bt_req[e].append(n)
-				if ('block' in node.data):
-					if (isinstance(node.data['block'], Iterable) and
-							events[e] in node.data['block']):
-						bt_block[e].append(n)
-					elif (isinstance(node.data['block'], BEvent) and
-							events[e] == node.data['block']):
-						bt_block[e].append(n)
-				bt_trans[n][e] = (node_to_s[node.transitions[events[e]]] if
-								events[e] in node.transitions else n)
+			if isinstance(node.data, BSync):
+				bt_trans[n] = {}
+				for e in event_names:
+					if ('request' in node.data):
+						if (isinstance(node.data['request'], Iterable) and
+								events[e] in node.data['request']):
+							bt_req[e].append(n)
+						elif (isinstance(node.data['request'], BEvent) and
+								events[e] == node.data['request']):
+							bt_req[e].append(n)
+					if ('block' in node.data):
+						if (isinstance(node.data['block'], Iterable) and
+								events[e] in node.data['block']):
+							bt_block[e].append(n)
+						elif (isinstance(node.data['block'], BEvent) and
+								events[e] == node.data['block']):
+							bt_block[e].append(n)
+					bt_trans[n][e] = (node_to_s[node.transitions[events[e]]] if
+									events[e] in node.transitions else n)
+			if isinstance(node.data, Choice):
+				bt_probs[n] = node.data
 
 		module_template = '\nmodule {}\n\t{}\n\n\t{}\nendmodule\n'
 		state_template = "formula is_{}_{}_{} = {};"
 		state_name = f's_{name}'
 		state_init = f'{state_name}: [0..{len(bt_states)-1}] init 0;'
 		event_transition = '[{}] ({}={}) & (is_{}_selected=true) -> 1: ({}\'={});'
+		prob_transition = '[] ({}={}) -> {};'
+		prob_format = '{}: ({}\'={})'
 
 		req = [state_template.format(name, "requesting", e,
 				' | '.join([('({}={})').format(state_name, n)
@@ -96,13 +103,20 @@ def prism_converter(bprogram_generator, event_list, bt_names):
 			string_tr = [event_transition.format(e, state_name,
 							n, e, state_name, s_tag) for e, s_tag in tr.items()]
 			transitions.append('\n\t'.join(string_tr))
+		
+		probabilities = []
+		for n, choice in bt_probs.items():
+			string_prob = [prob_format.format(p, state_name, next_node)
+							for next_node, p in choice.items()]
+			probabilities.append(prob_transition.format(state_name, n,
+								' + '.join(string_prob)))
 
 		module = ''
 		module += '\n\n'.join(
 			['\n'.join(sec) for sec in [req,block]])
 
 		module += module_template.format(name,
-								state_init, '\n\t\n\t'.join(transitions))
+								state_init, '\n\t\n\t'.join(transitions + probabilities))
 
 		return module
 
