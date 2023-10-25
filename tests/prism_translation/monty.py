@@ -2,8 +2,8 @@ import bppy as bp
 from bppy import BEvent
 from bppy.model.sync_statement import *
 from bppy.model.b_thread import b_thread
-from bppy_to_prism import prism_converter
-from probabilities import Choice
+from bppy.analysis.bprogram_to_prism import prism_converter
+from bppy.utils.probability import Choice
 
 
 

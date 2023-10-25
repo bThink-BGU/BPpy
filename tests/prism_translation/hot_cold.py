@@ -2,7 +2,7 @@ import bppy as bp
 from bppy import BEvent
 from bppy.model.sync_statement import *
 from bppy.model.b_thread import b_thread
-from bppy_to_prism import prism_converter
+from bppy.analysis.bprogram_to_prism import prism_converter
 
 @b_thread
 def add_hot():  # requests "HOT" three times
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
 	def bp_gen():
 		return bp.BProgram(bthreads=[add_hot(), add_cold(), add_random(), control()],
-						event_selection_strategy=bp.ProbabilisticEventSelectionStrategy(),
+						event_selection_strategy=bp.SimpleEventSelectionStrategy(),
 						listener=bp.PrintBProgramRunnerListener())
 	prog = bp_gen()
 	prog.run()
@@ -39,6 +39,3 @@ if __name__ == "__main__":
 	prism = prism_converter(bp_gen,
 				[bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("X"), bp.BEvent("Y")],
 				["bt_hot", "bt_cold", "add_random", "interweave"])
-	
-	with open("BProgram.pm", "w") as f:
-		f.write(prism)

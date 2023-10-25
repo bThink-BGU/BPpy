@@ -4,7 +4,7 @@ from bppy.model.sync_statement import BSync
 from bppy.utils.dfs import DFSBProgram
 from bppy.utils.exceptions import BPAssertionError
 from collections.abc import Iterable
-from probabilities import Choice
+from bppy.utils.probability import Choice
 
 
 # adjusting https://github.com/bThink-BGU/BPpy/blob/master/bppy/utils/dfs.py

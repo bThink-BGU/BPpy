@@ -1,6 +1,6 @@
 from copy import copy, deepcopy
 from bppy.model.sync_statement import BSync
-from probabilities import Choice
+from bppy.utils.probability import Choice
 
 def b_thread(func):
     """

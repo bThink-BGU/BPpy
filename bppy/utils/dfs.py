@@ -1,7 +1,7 @@
 from bppy.model.b_event import BEvent
 from bppy.model.sync_statement import BSync
 from bppy.utils.exceptions import BPAssertionError
-from probabilities import Choice
+from bppy.utils.probability import Choice
 
 class Node:
     def __init__(self, prefix, data):
