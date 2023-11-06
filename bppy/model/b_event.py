@@ -9,7 +9,7 @@ class BEvent:
     data : dict
         Additional data associated with the event.
     """
-    def __init__(self, name="", data={}, dist=None):
+    def __init__(self, name="", data={}):
         """
         Constructs all the necessary attributes for the BEvent object.
 

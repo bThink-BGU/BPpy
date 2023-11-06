@@ -1,7 +1,6 @@
 from bppy.model.b_event import BEvent
-from bppy.model.sync_statement import BSync
+from bppy.model.sync_statement import BSync, Choice
 from bppy.utils.exceptions import BPAssertionError
-from bppy.utils.probability import Choice
 
 class Node:
     def __init__(self, prefix, data):
@@ -70,7 +69,7 @@ class DFSBThread:
             s = stack.pop()
             if s not in visited:
                 visited.append(s)
-            if return_requested_and_blocked:
+            if isinstance(s.data, BSync) and return_requested_and_blocked:
                 if "request" in s.data:
                     if isinstance(s.data["request"], BEvent):
                         requested.add(s.data["request"])
