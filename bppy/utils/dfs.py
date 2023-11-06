@@ -1,5 +1,5 @@
 from bppy.model.b_event import BEvent
-from bppy.model.sync_statement import BSync, Choice
+from bppy.model.sync_statement import sync, Choice
 from bppy.utils.exceptions import BPAssertionError
 
 class Node:
@@ -41,7 +41,7 @@ class DFSBThread:
         for e in prefix: # e = event or choice key
             if s is None:
                 break
-            if isinstance(s, BSync): 
+            if isinstance(s, sync): 
                 if 'block' in s:
                     if isinstance(s.get('block'), BEvent):
                         if e == s.get('block'):
@@ -69,7 +69,7 @@ class DFSBThread:
             s = stack.pop()
             if s not in visited:
                 visited.append(s)
-            if isinstance(s.data, BSync) and return_requested_and_blocked:
+            if isinstance(s.data, sync) and return_requested_and_blocked:
                 if "request" in s.data:
                     if isinstance(s.data["request"], BEvent):
                         requested.add(s.data["request"])
@@ -87,7 +87,7 @@ class DFSBThread:
                     s.transitions[c] = (new_s, s.data[c])
                     if new_s not in visited:
                         stack.append(new_s)
-            if isinstance(s.data, BSync):
+            if isinstance(s.data, sync):
                 for e in self.event_list:
                     new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
                     if new_s.data is None:

@@ -1,6 +1,6 @@
 from bppy.model.b_event import BEvent
 from bppy.model.event_set import EventSet
-from bppy.model.sync_statement import BSync, Choice
+from bppy.model.sync_statement import sync, Choice
 from bppy.utils.dfs import DFSBProgram
 from bppy.utils.exceptions import BPAssertionError
 from collections.abc import Iterable
@@ -90,7 +90,7 @@ class BProgramConverter:
 			bt_probs = {}
 
 			for node, n in node_to_s.items():
-				if isinstance(node.data, BSync):
+				if isinstance(node.data, sync):
 					bt_trans[n] = {}
 					for e in event_names:
 						if ('request' in node.data):

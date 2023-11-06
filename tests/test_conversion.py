@@ -8,7 +8,7 @@ class TestBProgram(unittest.TestCase):
 		@b_thread
 		def main():
 			r = yield Choice({'a': 0.2, 'b': 0.3, 'c': 0.5})
-			yield BSync({request: BEvent(f'event_{r}')})
+			yield sync({request: BEvent(f'event_{r}')})
 
 		def bp_gen():
 			return bp.BProgram(bthreads=[main()],

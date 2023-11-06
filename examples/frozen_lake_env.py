@@ -1,6 +1,4 @@
 import bppy as bp
-from bppy.model.sync_statement import *
-from bppy.model.b_thread import b_thread
 from bppy.gym import *
 import numpy as np
 
@@ -21,51 +19,51 @@ class Move(bp.BEvent):
 
 # b-thread for cells in the environment, triggered when the agent moving to this cell. The b-thread than requests to
 # move to the intended direction or a perpendicular direction randomly
-@b_thread
+@bp.thread
 def cell(i, j):
     while True:
-        yield {waitFor: Move(i, j)}
-        e = yield {waitFor: agent_actions}
+        yield bp.sync(waitFor=Move(i, j))
+        e = yield bp.sync(waitFor=agent_actions)
         actions_and_opposite_moves = {"LEFT": Move(i, j+1),"RIGHT": Move(i, j-1),"UP": Move(i+1, j),"DOWN": Move(i-1, j)}
         # remove the opposite move to the action
         actions_and_opposite_moves.pop(e.name)
         possible_moves = list(actions_and_opposite_moves.values())
-        yield {request: possible_moves, block: agent_actions}
+        yield bp.sync(request=possible_moves, block=agent_actions)
 
 
 # b-thread for hole locations in the environment, representing terminal states
-@b_thread
+@bp.thread
 def hole(i, j):
-    yield {waitFor: Move(i, j)}
-    yield {block: bp.All()}  # reached hole terminate the program with a reward of 0
+    yield bp.sync(waitFor=Move(i, j))
+    yield bp.sync(block=bp.All())  # reached hole terminate the program with a reward of 0
 
 
 # b-thread representing wall locations, blocking moves to this wall
-@b_thread
+@bp.thread
 def wall(i, j):  # block moves to this wall
-    yield {block: Move(i, j)}
+    yield bp.sync(block=Move(i, j))
 
 
 # b-thread for the start of the environment run, triggering the initial location of the agent
-@b_thread
+@bp.thread
 def start():
-    yield {request: Move(0, 0), block: agent_actions}
+    yield bp.sync(request=Move(0, 0), block=agent_actions)
 
 
 # b-thread representing the goal of the environment, providing a terminal state with reward 1
-@b_thread
+@bp.thread
 def goal():
-    yield {waitFor: Move(ROWS-1, COLS-1), localReward: 0}
-    yield {block: bp.All(), localReward: 1}  # reached goal - terminate the program with a reward of 1
+    yield bp.sync(waitFor=Move(ROWS-1, COLS-1), localReward=0)
+    yield bp.sync(block=bp.All(), localReward=1)  # reached goal - terminate the program with a reward of 1
 
 
 # b-thread for the agent, requesting actions based on the current location
-@b_thread
+@bp.thread
 def agent():
     while True:
-        e = yield {waitFor: move_event}
+        e = yield bp.sync(waitFor=move_event)
         current_location = (e.data["i"], e.data["j"])
-        yield {request: agent_actions}
+        yield bp.sync(request=agent_actions)
 
 
 # function to initialize the b-program with the defined b-threads

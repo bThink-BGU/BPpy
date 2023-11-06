@@ -1,4 +1,4 @@
-from bppy import *
+import bppy as bp
 import itertools
 import pygame
 import time
@@ -22,14 +22,14 @@ def event_to_new_location(event):
 
 def event_to_2_steps_trajectory(event):
     i, j = event_to_new_location(event)
-    return event_to_new_location(BEvent(event.name, {"i": i, "j": j}))
+    return event_to_new_location(bp.BEvent(event.name, {"i": i, "j": j}))
 
 
 def new_location_to_events(i, j):
-    return [BEvent("Up", {"i": i+1, "j": j}),
-            BEvent("Down", {"i": i-1, "j": j}),
-            BEvent("Left", {"i": i, "j": j+1}),
-            BEvent("Right", {"i": i, "j": j-1})]
+    return [bp.BEvent("Up", {"i": i+1, "j": j}),
+            bp.BEvent("Down", {"i": i-1, "j": j}),
+            bp.BEvent("Left", {"i": i, "j": j+1}),
+            bp.BEvent("Right", {"i": i, "j": j-1})]
 
 
 def is_adjacent(l1, l2):
@@ -61,41 +61,41 @@ def find(map, ch):
     return [(i, j) for i, row in enumerate(map) for j, c in enumerate(row) if c == ch]
 
 # defining b-threads
-@b_thread
+@bp.thread
 def player(i, j):
     directions = ["Up", "Down", "Left", "Right"]
     while True:
-        e = yield {request: [BEvent(d, {"i": i, "j": j}) for d in directions]}
+        e = yield bp.sync(request=[bp.BEvent(d, {"i": i, "j": j}) for d in directions])
         i, j = event_to_new_location(e)
 
-@b_thread
+@bp.thread
 def wall():
     global walls_list
     block_list = list(itertools.chain(*[new_location_to_events(i, j) for i, j in walls_list]))  # use event_to_new_location(e)
-    yield {block: block_list}
+    yield bp.sync(block=block_list)
 
-@b_thread
+@bp.thread
 def boxes():
     global box_list, walls_list, target_list
     while True:
         neighbors_list = find_adjacent_objects(box_list, walls_list) + \
                          find_adjacent_objects(box_list, box_list)
-        double_object_movement = EventSet(block_action(neighbors_list))
-        e = yield {block: double_object_movement, waitFor: All()}
+        double_object_movement = bp.EventSet(block_action(neighbors_list))
+        e = yield bp.sync(block=double_object_movement, waitFor=bp.All())
         new_player_location = event_to_new_location(e)
         if new_player_location in box_list:
             new_box_location = event_to_2_steps_trajectory(e)
             box_list.remove(new_player_location)
             box_list.append(new_box_location)
 
-@b_thread
+@bp.thread
 def box(i, j):
     global box_list, walls_list, target_list
     while True:
         neighbors_list = find_adjacent_boxes((i, j), walls_list) + \
                          find_adjacent_boxes((i, j), box_list)
-        double_object_movement = EventSet(block_action(neighbors_list))
-        e = yield {block: double_object_movement, waitFor: All()}
+        double_object_movement = bp.EventSet(block_action(neighbors_list))
+        e = yield bp.sync(block=double_object_movement, waitFor=bp.All())
         new_player_location = event_to_new_location(e)
         if new_player_location == (i, j):
             new_box_location = event_to_2_steps_trajectory(e)
@@ -105,7 +105,7 @@ def box(i, j):
 
 
 
-@b_thread
+@bp.thread
 def map_printer(map):
     main_surface = pygame.display.set_mode((32 * len(map[0]), 32 * len(map)))
     count = 0
@@ -126,7 +126,7 @@ def map_printer(map):
         # print(count)
         count += 1
 
-        e = yield {waitFor: All()}
+        e = yield bp.sync(waitFor=bp.All())
 
         map = ",".join(map).replace("a", " ").split(",")
         map = ",".join(map).replace("A", "t").split(",")
@@ -186,7 +186,7 @@ def init_bprogram():  # initializes the BProgram with the corresponding b-thread
     player_location = player_locations[0]
 
     bthreads_list = [map_printer(map)] + [player(*player_location), wall()] + [box(*l) for l in box_list]
-    return BProgram(bthreads=bthreads_list, event_selection_strategy=SimpleEventSelectionStrategy())
+    return bp.BProgram(bthreads=bthreads_list, event_selection_strategy=bp.SimpleEventSelectionStrategy())
 
 # initialize a b-program instance and run.
 init_bprogram().run()

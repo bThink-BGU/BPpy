@@ -1,5 +1,5 @@
 import unittest
-from bppy import *
+import bppy as bp
 from bppy.analysis.dfs_bprogram_verifier import DFSBProgramVerifier
 from bppy.analysis.symbolic_bprogram_verifier import SymbolicBProgramVerifier
 
@@ -7,65 +7,65 @@ from bppy.analysis.symbolic_bprogram_verifier import SymbolicBProgramVerifier
 class TestAnalysis(unittest.TestCase):
 
     def test_dfs_failed(self):
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
+                yield bp.sync(request=bp.BEvent("HOT"))
 
-        @b_thread
+        @bp.thread
         def add_cold():
             for i in range(3):
-                yield {request: BEvent("COLD")}
+                yield bp.sync(request=bp.BEvent("COLD"))
 
-        @b_thread
+        @bp.thread
         def control():
             while True:
-                yield {waitFor: BEvent("HOT")}
-                yield {waitFor: All(), block: BEvent("HOT")}
+                yield bp.sync(waitFor=bp.BEvent("HOT"))
+                yield bp.sync(waitFor=bp.All(), block=bp.BEvent("HOT"))
 
-        @b_thread
+        @bp.thread
         def check():
-            yield {waitFor: BEvent("HOT")}
-            yield {waitFor: BEvent("HOT")}
-            yield {waitFor: BEvent("HOT")}
+            yield bp.sync(waitFor=bp.BEvent("HOT"))
+            yield bp.sync(waitFor=bp.BEvent("HOT"))
+            yield bp.sync(waitFor=bp.BEvent("HOT"))
             assert False
 
         def bp_gen():
-            return BProgram(bthreads=[add_hot(), add_cold(), control(), check()],
-                            event_selection_strategy=SimpleEventSelectionStrategy())
+            return bp.BProgram(bthreads=[add_hot(), add_cold(), control(), check()],
+                               event_selection_strategy=bp.SimpleEventSelectionStrategy())
 
         ver = DFSBProgramVerifier(bp_gen)
         ok, counter_example = ver.verify()
         assert not ok
 
     def test_dfs_passed(self):
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
+                yield bp.sync(request=bp.BEvent("HOT"))
 
-        @b_thread
+        @bp.thread
         def add_cold():
             for i in range(3):
-                yield {request: BEvent("COLD")}
+                yield bp.sync(request=bp.BEvent("COLD"))
 
-        @b_thread
+        @bp.thread
         def control():
             while True:
-                yield {waitFor: BEvent("HOT")}
-                yield {waitFor: All(), block: BEvent("HOT")}
+                yield bp.sync(waitFor=bp.BEvent("HOT"))
+                yield bp.sync(waitFor=bp.All(), block=bp.BEvent("HOT"))
 
-        @b_thread
+        @bp.thread
         def check():
-            yield {waitFor: BEvent("HOT")}
-            yield {waitFor: BEvent("HOT")}
-            yield {waitFor: BEvent("HOT")}
-            yield {waitFor: BEvent("HOT")}
+            yield bp.sync(waitFor=bp.BEvent("HOT"))
+            yield bp.sync(waitFor=bp.BEvent("HOT"))
+            yield bp.sync(waitFor=bp.BEvent("HOT"))
+            yield bp.sync(waitFor=bp.BEvent("HOT"))
             assert False
 
         def bp_gen():
-            return BProgram(bthreads=[add_hot(), add_cold(), control(), check()],
-                            event_selection_strategy=SimpleEventSelectionStrategy())
+            return bp.BProgram(bthreads=[add_hot(), add_cold(), control(), check()],
+                               event_selection_strategy=bp.SimpleEventSelectionStrategy())
 
         ver = DFSBProgramVerifier(bp_gen)
         ok, counter_example = ver.verify()
@@ -73,27 +73,27 @@ class TestAnalysis(unittest.TestCase):
 
     def test_symbolic_pass(self):
 
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
-            yield {request: BEvent("FINISH"), block: {BEvent("COLD")}}
+                yield bp.sync(request=bp.BEvent("HOT"))
+            yield bp.sync(request=bp.BEvent("FINISH"), block={bp.BEvent("COLD")})
 
-        @b_thread
+        @bp.thread
         def add_cold():
             for i in range(3):
-                yield {request: BEvent("COLD")}
+                yield bp.sync(request=bp.BEvent("COLD"))
 
-        @b_thread
+        @bp.thread
         def control():
             while True:
-                yield {waitFor: BEvent("HOT"), block: EventSet(lambda e: e.name == "COLD")}
-                yield {waitFor: All(), block: BEvent("HOT")}
+                yield bp.sync(waitFor=bp.BEvent("HOT"), block=bp.EventSet(lambda e: e.name == "COLD"))
+                yield bp.sync(waitFor=bp.All(), block=bp.BEvent("HOT"))
 
         def bp_gen():
-            return BProgram(bthreads=[add_hot(), add_cold(), control()])
+            return bp.BProgram(bthreads=[add_hot(), add_cold(), control()])
 
-        verifier = SymbolicBProgramVerifier(bp_gen, [BEvent("HOT"), BEvent("COLD"), BEvent("FINISH")])
+        verifier = SymbolicBProgramVerifier(bp_gen, [bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("FINISH")])
         result, explanation_str = verifier.verify(spec="F event = FINISH", type="BDD", bound=1000,
                                                   find_counterexample=True, print_info=False)
 
@@ -101,29 +101,28 @@ class TestAnalysis(unittest.TestCase):
 
     def test_symbolic_fail(self):
 
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
-            yield {request: BEvent("FINISH"), block: {BEvent("COLD")}}
+                yield bp.sync(request=bp.BEvent("HOT"))
+            yield bp.sync(request=bp.BEvent("FINISH"), block=[bp.BEvent("COLD")])
 
-        @b_thread
+        @bp.thread
         def add_cold():
             for i in range(3):
-                yield {request: BEvent("COLD")}
+                yield bp.sync(request=bp.BEvent("COLD"))
 
-        @b_thread
+        @bp.thread
         def control():
             while True:
-                yield {waitFor: BEvent("HOT")}
-                yield {waitFor: All(), block: BEvent("HOT")}
+                yield bp.sync(waitFor=bp.BEvent("HOT"))
+                yield bp.sync(waitFor=bp.All(), block=bp.BEvent("HOT"))
 
         def bp_gen():
-            return BProgram(bthreads=[add_hot(), add_cold(), control()])
+            return bp.BProgram(bthreads=[add_hot(), add_cold(), control()])
 
-        verifier = SymbolicBProgramVerifier(bp_gen, [BEvent("HOT"), BEvent("COLD"), BEvent("FINISH")])
+        verifier = SymbolicBProgramVerifier(bp_gen, [bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("FINISH")])
         result, explanation_str = verifier.verify(spec="F event = FINISH", type="BMC", bound=100,
                                                   find_counterexample=True, print_info=False)
 
         assert not result and explanation_str is not None
-

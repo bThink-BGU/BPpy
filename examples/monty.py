@@ -8,22 +8,22 @@ import itertools
 @b_thread
 def host():
 	hide = yield Choice({1: 0.33, 2: 0.33, 3: 0.33})
-	yield BSync({request: bp.BEvent(f'h{hide}')})
+	yield sync({request: bp.BEvent(f'h{hide}')})
 	guess = yield Choice({1: 0.33, 2: 0.33, 3: 0.33})
-	yield BSync({request: bp.BEvent(f'g{guess}')})
-	opened = yield BSync({request: [bp.BEvent(f"o{i}") for i in range(1, 4)]})
+	yield sync({request: bp.BEvent(f'g{guess}')})
+	opened = yield sync({request: [bp.BEvent(f"o{i}") for i in range(1, 4)]})
 
 @b_thread
 def car():
-	hideEvent = yield BSync({waitFor: [bp.BEvent(f"h{i}") for i in range(1, 4)]})
+	hideEvent = yield sync({waitFor: [bp.BEvent(f"h{i}") for i in range(1, 4)]})
 	hideDoor = hideEvent.name[1:]
-	yield BSync({block: bp.BEvent(f'o{hideDoor}')})
+	yield sync({block: bp.BEvent(f'o{hideDoor}')})
 
 @b_thread
 def guess():
-	guessEvent = yield BSync({waitFor: [bp.BEvent(f"g{i}") for i in range(1, 4)]})
+	guessEvent = yield sync({waitFor: [bp.BEvent(f"g{i}") for i in range(1, 4)]})
 	guessDoor = guessEvent.name[1:]
-	yield BSync({block: bp.BEvent(f'o{guessDoor}')})
+	yield sync({block: bp.BEvent(f'o{guessDoor}')})
 
 if __name__ == "__main__":
 	def bp_gen():
