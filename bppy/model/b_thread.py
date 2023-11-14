@@ -1,4 +1,5 @@
 from copy import copy
+from bppy.model.sync_statement import sync
 from warnings import warn
 
 
@@ -15,13 +16,15 @@ def thread(func):
                     e = f.send(m)
                     if type(e) == dict:
                         warn("using dict for statements is deprecated, use bppy.model.sync_statement.sync instead.")
-                    if isinstance(e, dict):
-                        e["locals"] = copy(f.gi_frame.f_locals)
+                        e = sync(e)
+                    if isinstance(e, sync):
+                        local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()}
+                        e["locals"] = copy(local_vars)
                         m = yield e
                         if m is None:
                             break
                     else:
-                        raise TypeError("bthread must yield a bppy.model.sync_statement.sync object")
+                        raise TypeError("bthread must yield a bppy.model.sync_statement object")
                 except (KeyError, StopIteration):
                     m = yield None
                     break
