@@ -9,7 +9,7 @@ class SimpleEventSelectionStrategy(EventSelectionStrategy):
     """
     A simple :class:`EventSelectionStrategy
     <bppy.model.event_selection.event_selection_strategy.EventSelectionStrategy>`, which uniformly selects an event
-    that is requested and not blocked. It advances all bthreads that requested or waited for the selected event.
+    that is requested and blocked. It advances all bthreads that requested or waited for the selected event.
     """
     def is_satisfied(self, event, statement):
         """
