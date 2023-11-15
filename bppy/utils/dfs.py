@@ -1,5 +1,5 @@
 from bppy.model.b_event import BEvent
-from bppy.model.sync_statement import sync, Choice
+from bppy.model.sync_statement import sync, choice
 from bppy.utils.exceptions import BPAssertionError
 
 class Node:
@@ -9,7 +9,7 @@ class Node:
         self.transitions = {}
 
     def __key(self):
-        if isinstance(self.data, Choice):
+        if isinstance(self.data, choice):
             return str(self.data._id)
         return str(self.data)
 
@@ -51,14 +51,14 @@ class DFSBThread:
                             return None
                 if self.ess.is_satisfied(e, s):
                     s = bt.send(e)
-            elif isinstance(s, Choice):
+            elif isinstance(s, choice):
                 s = bt.send(e)
         if s is None:
-            return {}
+            return sync()
         return s
 
     def run(self, return_requested_and_blocked=False):
-        init_s = Node(tuple(), self.get_state(tuple()))        
+        init_s = Node(tuple(), self.get_state(tuple()))
         visited = []
         stack = []
         stack.append(init_s)
@@ -80,7 +80,7 @@ class DFSBThread:
                         blocked.add(s.data["block"])
                     else:
                         blocked.update([x for x in self.event_list if x in s.data["block"]])
-            if isinstance(s.data, Choice):
+            if isinstance(s.data, choice):
                 for c in s.data.keys():
                     new_s = Node(s.prefix + (c,), 
                         self.get_state(s.prefix + (c,)))
@@ -135,7 +135,7 @@ class DFSBProgram:
                 mapper[i] = visited
                 init.append(init_s)
 
-            if not explore_graph:
+            if not explore_graph: # stop before mapping sync statements
                 return init, mapper 
 
             init = NodeList(init, tuple())
@@ -149,7 +149,8 @@ class DFSBProgram:
                 for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
                     new_s = []
                     for i, bt_s in enumerate(s.nodes):
-                        new_s.append(mapper[i][mapper[i].index(bt_s)].transitions[e])
+                        s_temp = mapper[i][mapper[i].index(bt_s)]
+                        new_s.append(s_temp.transitions[e])
                     new_s = NodeList(new_s, s.prefix + (e, ))
                     s.transitions[e] = new_s
                     if new_s not in visited:

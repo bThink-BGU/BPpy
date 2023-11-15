@@ -6,7 +6,7 @@ waitFor = "waitFor"
 block = "block"
 mustFinish = "mustFinish"
 priority = "priority"
-localReward = "reward"
+localReward = "localReward"
 
 class sync(dict):
     def __init__(self, *, request=None, waitFor=None, block=None, mustFinish=None, priority=None, localReward=None, **kwargs):
@@ -25,7 +25,7 @@ class sync(dict):
         super().__init__(kwargs)
 
 
-class Choice(dict):
+class choice(dict):
 	"""
     A class to represent a discrete choice object.
 

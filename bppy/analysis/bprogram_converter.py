@@ -1,6 +1,6 @@
 from bppy.model.b_event import BEvent
 from bppy.model.event_set import EventSet
-from bppy.model.sync_statement import sync, Choice
+from bppy.model.sync_statement import sync, choice
 from bppy.utils.dfs import DFSBProgram
 from bppy.utils.exceptions import BPAssertionError
 from collections.abc import Iterable
@@ -19,7 +19,7 @@ class BProgramConverter:
 		bprogram_generator : function
 			A function that generates a new instance of the BProgram.
 		event_list : list
-			A list of events which are used in the model.
+			A list of event objects which are used in the model.
 		bt_names : list, optional
 			Names to used for the matching bthreads in the prism model.
 			If none, the bthreads are named bt_0, bt_1, etc.
@@ -31,8 +31,8 @@ class BProgramConverter:
 		if bt_names is not None:
 			self.bt_names = bt_names
 		else:
-			self.bt_names = [f'bt_{i}' for i in range(len(self.bprogram_generator().bthreads))]
-		self.bt_names = bt_names
+			names = [f'bt_{i}' for i in range(len(self.bprogram_generator().bthreads))]
+			self.bt_names = names
 		self.max_trace_length = max_trace_length
 
 	def collect_structure(self):
@@ -49,7 +49,18 @@ class BProgramConverter:
 
 		return names, events, bp_states
 
-	def to_prism(self, output_file='./bprogram.pm'):
+	def to_prism(self, output_file=None):
+		"""
+		Converts the behavioral program to a PRISM model of a markov decision process, with each bthread corresponding to a module.
+		Returns the resulting text content.
+
+		Parameters
+        ----------
+        output_file : str, optional
+            Name of the file to write the PRISM model to.
+			Defaults to 'None'.
+        """
+
 		event_names, events, bp_states = self.collect_structure()
 
 		rule_template = "formula is_{}_{} = {};"
@@ -109,7 +120,7 @@ class BProgramConverter:
 								bt_block[e].append(n)
 						bt_trans[n][e] = (node_to_s[node.transitions[events[e]]] if
 										events[e] in node.transitions else n)
-				if isinstance(node.data, Choice):
+				if isinstance(node.data, choice):
 					bt_probs[n] = {rand_choice: (node_to_s[node.transitions[rand_choice][0]],
 												node.transitions[rand_choice][1])
 										for rand_choice in node.data.keys()}
@@ -139,9 +150,9 @@ class BProgramConverter:
 				transitions.append('\n\t'.join(string_tr))
 			
 			probabilities = []
-			for n, choice in bt_probs.items():
+			for n, c in bt_probs.items():
 				string_prob = [prob_format.format(p, state_name, next_state)
-								for next_state, p in choice.values()]
+								for next_state, p in c.values()]
 				probabilities.append(prob_transition.format(state_name, n,
 									' + '.join(string_prob)))
 
