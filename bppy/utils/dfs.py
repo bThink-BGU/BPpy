@@ -1,4 +1,5 @@
 from bppy.model.b_event import BEvent
+from bppy.model.sync_statement import sync, choice
 from bppy.utils.exceptions import BPAssertionError
 
 class Node:
@@ -8,6 +9,8 @@ class Node:
         self.transitions = {}
 
     def __key(self):
+        if isinstance(self.data, choice):
+            return str(self.data._id)
         return str(self.data)
 
     def __hash__(self):
@@ -18,6 +21,9 @@ class Node:
 
     def __str__(self):
         return str(self.prefix) + str(self.data)
+
+    def __repr__(self):
+        return self.__str__()
 
     def get_key(self):
         return self.__key()
@@ -31,21 +37,24 @@ class DFSBThread:
 
     def get_state(self, prefix):
         bt = self.bthread_gen()
-        s = bt.send(None)
-        for e in prefix:
+        s = bt.send(None) # s = sync or Choice
+        for e in prefix: # e = event or choice key
             if s is None:
                 break
-            if 'block' in s:
-                if isinstance(s.get('block'), BEvent):
-                    if e == s.get('block'):
-                        return None
-                else:
-                    if e in s.get('block'):
-                        return None
-            if self.ess.is_satisfied(e, s):
+            if isinstance(s, sync): 
+                if 'block' in s:
+                    if isinstance(s.get('block'), BEvent):
+                        if e == s.get('block'):
+                            return None
+                    else:
+                        if e in s.get('block'):
+                            return None
+                if self.ess.is_satisfied(e, s):
+                    s = bt.send(e)
+            elif isinstance(s, choice):
                 s = bt.send(e)
         if s is None:
-            return {}
+            return sync()
         return s
 
     def run(self, return_requested_and_blocked=False):
@@ -60,7 +69,7 @@ class DFSBThread:
             s = stack.pop()
             if s not in visited:
                 visited.append(s)
-            if return_requested_and_blocked:
+            if isinstance(s.data, sync) and return_requested_and_blocked:
                 if "request" in s.data:
                     if isinstance(s.data["request"], BEvent):
                         requested.add(s.data["request"])
@@ -71,14 +80,21 @@ class DFSBThread:
                         blocked.add(s.data["block"])
                     else:
                         blocked.update([x for x in self.event_list if x in s.data["block"]])
-
-            for e in self.event_list:
-                new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
-                if new_s.data is None:
-                    continue
-                s.transitions[e] = new_s
-                if new_s not in visited:
-                    stack.append(new_s)
+            if isinstance(s.data, choice):
+                for c in s.data.keys():
+                    new_s = Node(s.prefix + (c,), 
+                        self.get_state(s.prefix + (c,)))
+                    s.transitions[c] = (new_s, s.data[c])
+                    if new_s not in visited:
+                        stack.append(new_s)
+            if isinstance(s.data, sync):
+                for e in self.event_list:
+                    new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
+                    if new_s.data is None:
+                        continue
+                    s.transitions[e] = new_s
+                    if new_s not in visited:
+                        stack.append(new_s)
         if return_requested_and_blocked:
             return init_s, visited, requested, blocked
         return init_s, visited
@@ -106,7 +122,7 @@ class DFSBProgram:
         self.event_list = event_list
         self.max_trace_length = max_trace_length
 
-    def run(self):
+    def run(self, explore_graph=True):
         if self.event_list:
             mapper = {}
             init = []
@@ -119,6 +135,9 @@ class DFSBProgram:
                 mapper[i] = visited
                 init.append(init_s)
 
+            if not explore_graph: # stop before mapping sync statements
+                return init, mapper 
+
             init = NodeList(init, tuple())
             visited = set()
             stack = [init]
@@ -130,7 +149,8 @@ class DFSBProgram:
                 for e in ess.selectable_events([x.data for x in s.nodes if x.data is not None]):
                     new_s = []
                     for i, bt_s in enumerate(s.nodes):
-                        new_s.append(mapper[i][mapper[i].index(bt_s)].transitions[e])
+                        s_temp = mapper[i][mapper[i].index(bt_s)]
+                        new_s.append(s_temp.transitions[e])
                     new_s = NodeList(new_s, s.prefix + (e, ))
                     s.transitions[e] = new_s
                     if new_s not in visited:
@@ -172,7 +192,6 @@ class DFSBProgram:
     @staticmethod
     def tickets_without_bt(tickets):
         return [dict([(k, v) for k, v in t.items() if k != 'bt']) for t in tickets]
-
 
 
 

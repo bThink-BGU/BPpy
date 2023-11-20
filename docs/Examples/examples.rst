@@ -14,3 +14,4 @@ Examples
    hot_cold_verification
    dining_philosophers_verification
    sokoban
+   monty_hall

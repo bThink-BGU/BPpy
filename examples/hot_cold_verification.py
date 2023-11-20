@@ -1,33 +1,31 @@
 import bppy as bp
-from bppy.model.sync_statement import *
-from bppy.model.b_thread import b_thread
 from bppy.analysis.dfs_bprogram_verifier import DFSBProgramVerifier
 
 
-@b_thread
+@bp.thread
 def add_hot():  # requests "HOT" three times
     for i in range(3):
-        yield {request: bp.BEvent("HOT")}
+        yield bp.sync(request=bp.BEvent("HOT"))
 
 
-@b_thread
+@bp.thread
 def add_cold():  # requests "COLD" three times
     for i in range(3):
-        yield {request: bp.BEvent("COLD")}
+        yield bp.sync(request=bp.BEvent("COLD"))
 
 
-@b_thread
+@bp.thread
 def control():  # blocking 2 consecutive HOT events
     while True:
-        yield {waitFor: bp.BEvent("HOT")}
-        yield {waitFor: bp.All(), block: bp.BEvent("HOT")}
+        yield bp.sync(waitFor=bp.BEvent("HOT"))
+        yield bp.sync(block=bp.BEvent("HOT"), waitFor=bp.BEvent("COLD"))
 
 
-@b_thread
+@bp.thread
 def check():  # checks for 2 consecutive COLD events
     while True:
-        yield {waitFor: bp.BEvent("COLD")}
-        e = yield {waitFor: bp.All()}
+        yield bp.sync(waitFor=bp.BEvent("COLD"))
+        e = yield bp.sync(waitFor=bp.All())
         if e == bp.BEvent("COLD"):
             assert False
 
@@ -53,13 +51,13 @@ else:
 
 # After running the b-program, we can see that the check b-thread is able to detect the violation.
 # We will now update the control b-thread to fix the violation.
-@b_thread
+@bp.thread
 def control_new():
     # This b-thread controls the temperature by blocking the previously selected event
     # and waiting for all other events in each iteration of its loop
     e = bp.BEvent("Dummy")
     while True:
-        e = yield {waitFor: bp.All(), block: e}
+        e = yield bp.sync(waitFor=bp.All(), block=e)
 
 
 def bp_gen_new():

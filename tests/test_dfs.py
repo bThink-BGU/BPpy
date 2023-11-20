@@ -1,120 +1,125 @@
 import unittest
-from bppy import *
+import bppy as bp
 from bppy.utils.dfs import DFSBThread, DFSBProgram
 from bppy.utils.exceptions import BPAssertionError
+
 
 class TestDFS(unittest.TestCase):
 
     def test_hello_world(self):
-        @b_thread
+        @bp.thread
         def hello():
-            yield {request: BEvent("Hello")}
+            yield bp.sync(request=bp.BEvent("Hello"))
 
-        dfs = DFSBThread(lambda: hello(), SimpleEventSelectionStrategy(), [BEvent("Hello"), BEvent("Dummy")])
+        dfs = DFSBThread(lambda: hello(), bp.SimpleEventSelectionStrategy(), [bp.BEvent("Hello"), bp.BEvent("Dummy")])
         init_s, visited = dfs.run()
         assert len(visited) == 2
 
     def test_hot(self):
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
+                yield bp.sync(request=bp.BEvent("HOT"))
 
-        dfs = DFSBThread(lambda: add_hot(), SimpleEventSelectionStrategy(), [BEvent("HOT"), BEvent("COLD"), BEvent("Dummy")])
+        dfs = DFSBThread(lambda: add_hot(), bp.SimpleEventSelectionStrategy(),
+                         [bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("Dummy")])
         init_s, visited = dfs.run()
         assert len(visited) == 4
+
     def test_hot_rb(self):
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
+                yield bp.sync(request=bp.BEvent("HOT"))
 
-        dfs = DFSBThread(lambda: add_hot(), SimpleEventSelectionStrategy(), [BEvent("HOT"), BEvent("COLD"), BEvent("Dummy")])
+        dfs = DFSBThread(lambda: add_hot(), bp.SimpleEventSelectionStrategy(),
+                         [bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("Dummy")])
         init_s, visited, requested, blocked = dfs.run(return_requested_and_blocked=True)
         assert len(visited) == 4 and len(requested) == 1 and len(blocked) == 0
 
     def test_control(self):
-        @b_thread
+        @bp.thread
         def control_temp():
-            e = BEvent("Dummy")
+            e = bp.BEvent("Dummy")
             while True:
-                e = yield {waitFor: All(), block: e}
+                e = yield bp.sync(waitFor=bp.All(), block=e)
 
-        dfs = DFSBThread(lambda: control_temp(), SimpleEventSelectionStrategy(), [BEvent("HOT"), BEvent("COLD")])
+        dfs = DFSBThread(lambda: control_temp(), bp.SimpleEventSelectionStrategy(),
+                         [bp.BEvent("HOT"), bp.BEvent("COLD")])
         init_s, visited = dfs.run()
         assert len(visited) == 3
 
     def test_bprogram(self):
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
+                yield bp.sync(request=bp.BEvent("HOT"))
 
-        @b_thread
+        @bp.thread
         def add_cold():
             for i in range(3):
-                yield {request: BEvent("COLD")}
+                yield bp.sync(request=bp.BEvent("COLD"))
 
-        @b_thread
+        @bp.thread
         def control():
             while True:
-                yield {waitFor: BEvent("HOT")}
-                yield {waitFor: All(), block: BEvent("HOT")}
+                yield bp.sync(waitFor=bp.BEvent("HOT"))
+                yield bp.sync(waitFor=bp.All(), block=bp.BEvent("HOT"))
 
         def bp_gen():
-            return BProgram(bthreads=[add_hot(), add_cold(), control()],
-                            event_selection_strategy=SimpleEventSelectionStrategy())
+            return bp.BProgram(bthreads=[add_hot(), add_cold(), control()],
+                               event_selection_strategy=bp.SimpleEventSelectionStrategy())
 
-        dfs = DFSBProgram(bp_gen, [BEvent("HOT"), BEvent("COLD"), BEvent("Dummy")])
+        dfs = DFSBProgram(bp_gen, [bp.BEvent("HOT"), bp.BEvent("COLD"), bp.BEvent("Dummy")])
         init_s, visited = dfs.run()
         assert len(visited) == 19
 
     def test_bprogram_no_list(self):
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
+                yield bp.sync(request=bp.BEvent("HOT"))
 
-        @b_thread
+        @bp.thread
         def add_cold():
             for i in range(3):
-                yield {request: BEvent("COLD")}
+                yield bp.sync(request=bp.BEvent("COLD"))
 
-        @b_thread
+        @bp.thread
         def control():
             while True:
-                yield {waitFor: BEvent("HOT")}
-                yield {waitFor: All(), block: BEvent("HOT")}
+                yield bp.sync(waitFor=bp.BEvent("HOT"))
+                yield bp.sync(waitFor=bp.All(), block=bp.BEvent("HOT"))
 
         def bp_gen():
-            return BProgram(bthreads=[add_hot(), add_cold(), control()],
-                            event_selection_strategy=SimpleEventSelectionStrategy())
+            return bp.BProgram(bthreads=[add_hot(), add_cold(), control()],
+                               event_selection_strategy=bp.SimpleEventSelectionStrategy())
 
         dfs = DFSBProgram(bp_gen)
         init_s, visited = dfs.run()
         assert len(visited) == 19
 
     def test_bp_assertion_error(self):
-        @b_thread
+        @bp.thread
         def add_hot():
             for i in range(3):
-                yield {request: BEvent("HOT")}
+                yield bp.sync(request=bp.BEvent("HOT"))
 
-        @b_thread
+        @bp.thread
         def add_cold():
             for i in range(3):
-                yield {request: BEvent("COLD")}
+                yield bp.sync(request=bp.BEvent("COLD"))
             assert False
 
-        @b_thread
+        @bp.thread
         def control():
             while True:
-                yield {waitFor: BEvent("HOT")}
-                yield {waitFor: All(), block: BEvent("HOT")}
+                yield bp.sync(waitFor=bp.BEvent("HOT"))
+                yield bp.sync(waitFor=bp.All(), block=bp.BEvent("HOT"))
 
         def bp_gen():
-            return BProgram(bthreads=[add_hot(), add_cold(), control()],
-                            event_selection_strategy=SimpleEventSelectionStrategy())
+            return bp.BProgram(bthreads=[add_hot(), add_cold(), control()],
+                               event_selection_strategy=bp.SimpleEventSelectionStrategy())
 
         dfs = DFSBProgram(bp_gen)
         try:
@@ -122,4 +127,3 @@ class TestDFS(unittest.TestCase):
         except BPAssertionError:
             pass
         assert True
-

@@ -1,4 +1,5 @@
-from bppy import *
+import bppy as bp
+from bppy.utils.z3helper import *
 # import pygame
 
 H = 250
@@ -25,41 +26,41 @@ def center_of_mass():
     req = Or(And(sum(dX) == speed, sum(dY) == speed, p == 3),
              And(sum(dX) == 0, sum(dY) == -speed, p == 2))
 
-    yield {'request': req, 'wait-for': false}
+    yield bp.sync(request=req, waitFor=false)
 
 
 def obstacle(i):
     obs = And(nextX[i] >= 0.7, nextX[i] <= 0.75,
               nextY[i] >= 0.7, nextY[i] <= 0.75)
 
-    yield {'block': obs, 'wait-for': false}
+    yield bp.sync(block=obs, waitFor=false)
 
 
 def structure_x():
-    yield {'block': Or([Not(dX[i] == dX[i - 1]) for i in range(1, N)]), 'wait-for': false}
+    yield bp.sync(block=Or([Not(dX[i] == dX[i - 1]) for i in range(1, N)]), waitFor=false)
 
 
 def structure_y():
-    yield {'block': Or([Not(dY[i] == dY[i - 1]) for i in range(1, N)]), 'wait-for': false}
+    yield bp.sync(block=Or([Not(dY[i] == dY[i - 1]) for i in range(1, N)]), waitFor=false)
 
 
 def init_x():
-    yield {'request': And([X[i] == 0.1 * i for i in range(N)])}
+    yield bp.sync(request=And([X[i] == 0.1 * i for i in range(N)]))
 
 
 def init_y():
-    yield {'request': And([Y[i] == 0.1 * i for i in range(N)])}
+    yield bp.sync(request=And([Y[i] == 0.1 * i for i in range(N)]))
 
 
 def step(i):
     m = yield {}
     while True:
         d = And(X[i] == m.eval(nextX[i]), Y[i] == m.eval(nextY[i]))
-        m = yield {'request': d, 'block': Not(d)}
+        m = yield bp.sync(request=d, waitFor=Not(d))
 
 
 def walls(i):
-    yield {'block': Or(nextX[i] < 0, nextX[i] > 1, nextY[i] < 0, nextY[i] > 1), 'wait-for': false}
+    yield bp.sync(block=Or(nextX[i] < 0, nextX[i] > 1, nextY[i] < 0, nextY[i] > 1), waitFor=false)
 
 # TODO: debug display function - issue with pygame
 # def display():
@@ -90,7 +91,7 @@ def walls(i):
 
 
 if __name__ == "__main__":
-    b_program = BProgram(
+    b_program = bp.BProgram(
 
         bthreads=[init_x(), init_y(), center_of_mass(), structure_x(),
                   structure_y()] +
@@ -98,8 +99,8 @@ if __name__ == "__main__":
                  [step(i) for i in range(N)] +
                  [obstacle(i) for i in range(N)],
 
-        event_selection_strategy=SMTEventSelectionStrategy(),
-        listener=PrintBProgramRunnerListener())
+        event_selection_strategy=bp.SMTEventSelectionStrategy(),
+        listener=bp.PrintBProgramRunnerListener())
     b_program.event_selection_strategy.debug = True
 
     b_program.run()

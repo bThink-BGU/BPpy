@@ -1,8 +1,8 @@
-from bppy import *
+import bppy as bp
 
 # BEvents functions for x and o moves
-x = lambda row, col: BEvent('X' + str(row) + str(col))
-o = lambda row, col: BEvent('O' + str(row) + str(col))
+x = lambda row, col: bp.BEvent('X' + str(row) + str(col))
+o = lambda row, col: bp.BEvent('O' + str(row) + str(col))
 
 # locations of all possible lines
 LINES = [[(i, j) for j in range(3)] for i in range(3)] + [[(i, j) for i in range(3)] for j in range(3)] + [
@@ -13,99 +13,94 @@ o_lines = [[o(i, j) for (i, j) in line] for line in LINES]
 # define events sets of x an o moves
 any_x = [x(i, j) for i in range(3) for j in range(3)]
 any_o = [o(i, j) for i in range(3) for j in range(3)]
-move_events = EventSet(lambda e: e.name.startswith('X') or e.name.startswith('O'))
+move_events = bp.EventSet(lambda e: e.name.startswith('X') or e.name.startswith('O'))
 
 # define static terminal events
 static_event = {
-    'OWin': BEvent('OWin'),
-    'XWin': BEvent('XWin'),
-    'draw': BEvent('Draw')
+    'OWin': bp.BEvent('OWin'),
+    'XWin': bp.BEvent('XWin'),
+    'draw': bp.BEvent('Draw')
 }
 
 
-@b_thread
+@bp.thread
 def square_taken(row, col):  # blocks moves to a square that is already taken
-    yield {waitFor: [x(row, col), o(row, col)]}
-    yield {block: [x(row, col), o(row, col)]}
+    yield bp.sync(waitFor=[x(row, col), o(row, col)])
+    yield bp.sync(block=[x(row, col), o(row, col)])
 
 
-@b_thread
+@bp.thread
 def enforce_turns():  # blocks moves that are not in turn
     while True:
-        yield {waitFor: any_x, block: any_o}
-        yield {waitFor: any_o, block: any_x}
+        yield bp.sync(waitFor=any_x, block=any_o)
+        yield bp.sync(waitFor=any_o, block=any_x)
 
 
-@b_thread
+@bp.thread
 def end_of_game():  # blocks moves after the game is over
-    yield {waitFor: list(static_event.values())}
-    yield {block: All()}
+    yield bp.sync(waitFor=list(static_event.values()))
+    yield bp.sync(block=bp.All())
 
 
-@b_thread
+@bp.thread
 def detect_draw():  # detects a draw
     for r in range(3):
         for c in range(3):
-            yield {waitFor: move_events}
-    yield {request: static_event['draw'], priority: 90}
+            yield bp.sync(waitFor=move_events)
+    yield bp.sync(request=static_event['draw'], priority=90)
 
 
-@b_thread
+@bp.thread
 def detect_x_win(line):  # detects a win by player X
     for i in range(3):
-        yield {waitFor: line}
-    yield {request: static_event['XWin'], priority: 100}
+        yield bp.sync(waitFor=line)
+    yield bp.sync(request=static_event['XWin'], priority=100)
 
 
-@b_thread
+@bp.thread
 def detect_o_win(line):  # detects a win by player O
     for i in range(3):
-        yield {waitFor: line}
-    yield {request: static_event['OWin'], priority: 100}
+        yield bp.sync(waitFor=line)
+    yield bp.sync(request=static_event['OWin'], priority=100)
 
 
-# Preference to put O on the center
-@b_thread
+@bp.thread
 def center_preference():
     while True:
-        yield {request: o(1, 1), priority: 35}
+        yield bp.sync(request=o(1, 1), priority=35)
 
 
-# Preference to put O on the corners
-@b_thread
+@bp.thread
 def corner_preference():
     while True:
-        yield {request: [o(0, 0), o(0, 2), o(2, 0), o(2, 2)], priority: 20}
+        yield bp.sync(request=[o(0, 0), o(0, 2), o(2, 0), o(2, 2)], priority=20)
 
 
-# Preference to put O on the sides
-@b_thread
+@bp.thread
 def side_preference():
     while True:
-        yield {request: [o(0, 1), o(1, 0), o(1, 2), o(2, 1)], priority: 10}
+        yield bp.sync(request=[o(0, 1), o(1, 0), o(1, 2), o(2, 1)], priority=10)
 
 
-# player O strategy to add a third O to win
-@b_thread
+@bp.thread
 def add_third_o(line):
     for i in range(2):
-        yield {waitFor: line}
-    yield {request: line, priority: 50}
+        yield bp.sync(waitFor=line)
+    yield bp.sync(request=line, priority=50)
 
 
-# player O strategy to prevent a third X
-@b_thread
+@bp.thread
 def prevent_third_x(xline, oline):
     for i in range(2):
-        yield {waitFor: xline}
-    yield {request: oline, priority: 40}
+        yield bp.sync(waitFor=xline)
+    yield bp.sync(request=oline, priority=40)
 
 
-@b_thread
+@bp.thread
 def block_fork(xfork, ofork):  # blocks a fork strategy
     for i in range(2):
-        yield {waitFor: xfork}
-    yield {request: ofork, priority: 30}
+        yield bp.sync(waitFor=xfork)
+    yield bp.sync(request=ofork, priority=30)
 
 
 forks22 = [[x(1, 2), x(2, 0)], [x(2, 1), x(0, 2)], [x(1, 2), x(2, 1)]], [o(2, 2), o(0, 2), o(2, 0)]
@@ -114,15 +109,14 @@ forks20 = [[x(1, 0), x(2, 2)], [x(2, 1), x(0, 0)], [x(2, 1), x(1, 0)]], [o(2, 0)
 forks00 = [[x(0, 1), x(2, 0)], [x(1, 0), x(0, 2)], [x(0, 1), x(1, 0)]], [o(0, 0), o(0, 2), o(2, 0)]
 forks_diag = [[x(0, 2), x(2, 0)], [x(0, 0), x(2, 2)]], [o(0, 1), o(1, 0), o(1, 2), o(2, 1)]
 
-
-@b_thread
+@bp.thread
 def player_x():  # simulate player X
     while True:
-        yield {request: any_x}
+        yield bp.sync(request=any_x)
 
 
 if __name__ == "__main__":
-    bprog = BProgram(
+    bprog = bp.BProgram(
         bthreads=[square_taken(i, j) for i in range(3) for j in range(3)] +
                  [enforce_turns(), end_of_game(), detect_draw()] +
                  [detect_x_win(line) for line in x_lines] +
@@ -136,7 +130,7 @@ if __name__ == "__main__":
                  [block_fork(xfork, forks00[1]) for xfork in forks00[0]] +
                  [block_fork(xfork, forks_diag[1]) for xfork in forks_diag[0]] +
                  [player_x()],
-        event_selection_strategy=PriorityBasedEventSelectionStrategy(default_priority=0),
-        listener=PrintBProgramRunnerListener()
+        event_selection_strategy=bp.PriorityBasedEventSelectionStrategy(default_priority=0),
+        listener=bp.PrintBProgramRunnerListener()
     )
     bprog.run()

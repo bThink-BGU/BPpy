@@ -4,6 +4,14 @@ bppy.analysis package
 Submodules
 ----------
 
+bppy.analysis.bprogram\_converter module
+----------------------------------------
+
+.. automodule:: bppy.analysis.bprogram_converter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bppy.analysis.dfs\_bprogram\_verifier module
 --------------------------------------------
 

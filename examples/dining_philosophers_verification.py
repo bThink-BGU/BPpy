@@ -1,6 +1,4 @@
 import bppy as bp
-from bppy.model.sync_statement import *
-from bppy.model.b_thread import b_thread
 from bppy.analysis.symbolic_bprogram_verifier import SymbolicBProgramVerifier
 
 # define the number of philosophers
@@ -22,23 +20,23 @@ all_events = [bp.BEvent(f"T{i}R") for i in range(PHILOSOPHER_COUNT)] + \
 
 
 # define the behavior of a philosopher
-@b_thread
+@bp.thread
 def philosopher(i):
     while True:
         for j in range(2):
-            yield {request: [bp.BEvent(f"T{i}R"), bp.BEvent(f"T{i}L")]}
+            yield bp.sync(request=[bp.BEvent(f"T{i}R"), bp.BEvent(f"T{i}L")])
         for j in range(2):
-            yield {request: [bp.BEvent(f"P{i}R"), bp.BEvent(f"P{i}L")]}
+            yield bp.sync(request=[bp.BEvent(f"P{i}R"), bp.BEvent(f"P{i}L")])
 
 
 # define the behavior of a fork
-@b_thread
+@bp.thread
 def fork(i):
     while True:
         e, cannot_put = None, None
-        e = yield {waitFor: any_take[i], block: any_put[i]}
+        e = yield bp.sync(waitFor=any_take[i], block=any_put[i])
         cannot_put = bp.BEvent(f"P{(i + 1) % PHILOSOPHER_COUNT}L") if e.name.endswith("R") else bp.BEvent(f"P{i}R")
-        yield {waitFor: any_put[i], block: any_take[i] + [cannot_put]}
+        yield bp.sync(waitFor=any_put[i], block=any_take[i] + [cannot_put])
 
 
 def init_bprogram():  # function to initialize the b-program with the defined b-threads
@@ -75,22 +73,22 @@ else:
     print(explanation_str)
 
 # introduce semaphores to fix the classic problem
-@b_thread
+@bp.thread
 def semaphore():
     while True:
-        yield {waitFor: any_take_semaphore}
-        yield {waitFor: any_release_semaphore, block: any_take_semaphore}
+        yield bp.sync(waitFor=any_take_semaphore)
+        yield bp.sync(waitFor=any_release_semaphore, block=any_take_semaphore)
 
 
-@b_thread
+@bp.thread
 def take_semaphore(i):
     while True:
-        yield {request: bp.BEvent(f"TS{i}"), block: [bp.BEvent(f"T{i}R"), bp.BEvent(f"T{i}L")]}
+        yield bp.sync(request=bp.BEvent(f"TS{i}"), block=[bp.BEvent(f"T{i}R"), bp.BEvent(f"T{i}L")])
         for j in range(2):
-            yield {waitFor: [bp.BEvent(f"T{i}R"), bp.BEvent(f"T{i}L")]}
-        yield {request: bp.BEvent(f"RS{i}"), block: [bp.BEvent(f"P{i}R"), bp.BEvent(f"P{i}L")]}
+            yield bp.sync(waitFor=[bp.BEvent(f"T{i}R"), bp.BEvent(f"T{i}L")])
+        yield bp.sync(request=bp.BEvent(f"RS{i}"), block=[bp.BEvent(f"P{i}R"), bp.BEvent(f"P{i}L")])
         for j in range(2):
-            yield {waitFor: [bp.BEvent(f"P{i}R"), bp.BEvent(f"P{i}L")]}
+            yield bp.sync(waitFor=[bp.BEvent(f"P{i}R"), bp.BEvent(f"P{i}L")])
 
 
 def init_fixed_bprogram():  # initialize the fixed b-program with semaphores and the defined b-threads
