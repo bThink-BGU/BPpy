@@ -16,7 +16,7 @@ def thread(func):
                     e = f.send(m)
                     if type(e) == dict:
                         warn("using dict for statements is deprecated, use bppy.model.sync_statement.sync instead.")
-                        e = sync(e)
+                        e = sync(**e)
                     if isinstance(e, sync):
                         local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()}
                         e["locals"] = copy(local_vars)
@@ -30,9 +30,6 @@ def thread(func):
                 except (KeyError, StopIteration):
                     m = yield None
                     break
-                # except (KeyError, StopIteration):
-                #     m = yield None
-                #     break
     return wrapper
 
 
