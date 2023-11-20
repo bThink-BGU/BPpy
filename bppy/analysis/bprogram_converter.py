@@ -55,11 +55,11 @@ class BProgramConverter:
 		Returns the resulting text content.
 
 		Parameters
-        ----------
-        output_file : str, optional
-            Name of the file to write the PRISM model to.
+		----------
+		output_file : str, optional
+			Name of the file to write the PRISM model to.
 			Defaults to 'None'.
-        """
+		"""
 
 		event_names, events, bp_states = self.collect_structure()
 

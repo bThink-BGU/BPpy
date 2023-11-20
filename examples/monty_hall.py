@@ -4,12 +4,6 @@ from bppy.model.b_thread import thread
 from bppy.analysis.bprogram_converter import BProgramConverter
 import itertools
 
-'''
-Monty Hall problem:
-Show host hides a prize behind one of three doors. A player guesses a door.
-The host opens one of the other doors, revealing no prize.
-The player can now choose to stick with their original choice or switch to the other door.
-'''
 
 @thread
 def game_show(): # b-thread for the game show host
