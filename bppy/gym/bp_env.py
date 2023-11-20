@@ -111,8 +111,8 @@ class BPEnv(gym.Env):
         """
         super().reset(seed=seed, options=options)
         self.bprogram = self.bprogram_generator()
-        if isinstance(self.bprogram.event_selection_strategy, SolverBasedEventSelectionStrategy):
-            raise NotImplementedError("SolverBasedEventSelectionStrategy is currently not supported")
+        # if isinstance(self.bprogram.event_selection_strategy, SolverBasedEventSelectionStrategy):
+        #     raise NotImplementedError("SolverBasedEventSelectionStrategy is currently not supported")
         self.action_space.bprogram = self.bprogram
         self.bprogram.setup()
         while not self._step_done():
