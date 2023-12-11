@@ -10,6 +10,7 @@ localReward = "localReward"
 
 class sync(dict):
     def __init__(self, *, request=None, waitFor=None, block=None, mustFinish=None, priority=None, localReward=None, **kwargs):
+        #'''TODO: warn if req/waitFor/block are not BEvent or choice'''
         if request is not None:
             self["request"] = request
         if waitFor is not None:
