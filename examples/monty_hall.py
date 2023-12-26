@@ -16,36 +16,32 @@ def game_show(): # b-thread for the game show host
 	# choice may be made before the bthread starts
 	hide = yield choice({1: 0.33, 2: 0.33, 3: 0.33}) # the value returned is equivalent to sampling the distribution
 	yield sync(request=bp.BEvent(f'h{hide}'))
-	guess_string = yield choice({'g1': 0.33, 'g2': 0.33, 'g3': 0.33}) # the domain can be any value that can be used in a dict
-	yield sync(request= bp.BEvent(guess_string))
-	opened = yield sync(request=[bp.BEvent(f'o{i}') for i in range(1, 4)]) # only one of these will be the selected event
-	final_choice = yield sync(request= [bp.BEvent(f'c{i}') for i in range(1, 4)])
+	guess = yield sync(waitFor=[bp.BEvent(f'g{i}') for i in range(1, 4)]) # wait for the player to make a guess
+	doors_possible = [door for door in [1, 2, 3] if door not in [hide, int(guess.name[1:])]]
+	opened = yield choice({door: 1/len(doors_possible) for door in doors_possible})
+	yield sync(request=bp.BEvent('o'+str(opened))) # only one of these will be selected
 
 @analysis_thread
-def block_opening_prize(): # prevent the host from opening the door with the prize
-	hideEvent = yield sync(waitFor=[bp.BEvent(f'h{i}') for i in range(1, 4)])
-	hideDoor = hideEvent.name[1:]
-	yield sync(block= bp.BEvent(f'o{hideDoor}'))
+def contestant():
+	yield sync(waitFor=[bp.BEvent(f'h{i}') for i in range(1, 4)]) # wait for the host to hide the prize
+	guess = yield choice({'g1': 0.33, 'g2': 0.33, 'g3': 0.33}) # the domain can be any value that can be used in a dict
+	yield sync(request=bp.BEvent(guess))
+	o = yield sync(waitFor=[bp.BEvent(f'o{i}') for i in range(1, 4)])
+	final_choice = yield sync(request=[bp.BEvent(f'c{i}') for i in range(1, 4)])
 
 @analysis_thread
-def block_opening_guess(): # prevent the host from opening the door the player guessed
-	guessEvent = yield sync(waitFor=[bp.BEvent(f'g{i}') for i in range(1, 4)])
-	guessDoor = guessEvent.name[1:]
-	yield sync(block=bp.BEvent(f'o{guessDoor}'))
-
-@analysis_thread
-def block_choosing_opened_doors(): # whenever a door is opened, block it from being chosen at the end
+def block_choosing_opened_doors(): # prevent the player from picking an opened door
 	choiceEvent = yield sync(waitFor=[bp.BEvent(f'o{i}') for i in range(1, 4)])
 	choiceDoor = choiceEvent.name[1:]
 	yield sync(block=bp.BEvent(f'c{choiceDoor}'))
 
-
 if __name__ == '__main__':
 	def bp_gen():
-		return bp.BProgram(bthreads=[game_show(), block_opening_prize(), block_opening_guess(), block_choosing_opened_doors()],
-						event_selection_strategy=bp.SimpleEventSelectionStrategy())
+		return bp.BProgram(bthreads=[game_show(), contestant(), block_choosing_opened_doors()],
+						event_selection_strategy=bp.SimpleEventSelectionStrategy(),
+						listener=bp.PrintBProgramRunnerListener())
 	events = [bp.BEvent(f'{action}{i}') for action, i in itertools.product(['h', 'g', 'o', 'c'], range(1, 4))]
-	converter = BProgramConverter(bp_gen, events, ["game", "prize", "guess", "doors_opened"])
-	#content = converter.to_prism()
-	converter.to_prism('monty_out.pm')
+	converter = BProgramConverter(bp_gen, events, ["host", "contestant","block_door"])
+	content = converter.to_prism()
+	#converter.to_prism('monty_out.pm')
 	
