@@ -23,7 +23,7 @@ ENV PATH=/venv/bin:$PATH
 
 # Install the required Python packages
 RUN python3 -m pip install \
-    bppy==0.0.8 \
+    bppy \
     z3-solver>=4.8.5.0 \
     gymnasium==0.28.1 \
     stable-baselines3==2.0.0 \
