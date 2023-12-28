@@ -86,11 +86,15 @@ class BProgramConverter:
 		labels = ["label \"{}\" = ({}_enabled=true);".format(e, e)
 			for e in event_names]
 		
-		
+		event_transition = '[{}] ({}_enabled=true) -> 1: true;'
+		guards = '\n\t'.join([event_transition.format(e, e) for e in event_names])
+		module_main = '\n\nmodule main\n\t{}\nendmodule\n'.format(guards)
 
 		header += '\n\n'.join(
-			['\n'.join(sec) for sec in [req,block,enable,labels]])
-
+			['\n'.join(sec) for sec in [req,block,enable,
+				labels]])
+		
+		header += module_main
 		header += '\n//-----------------------\n\n'
 
 		def format_bt_module(name, event_names, bt_states):
@@ -131,7 +135,7 @@ class BProgramConverter:
 			state_template = "formula {}_{}_{} = {};"
 			state_name = f's_{name}'
 			state_init = f'{state_name}: [0..{len(bt_states)-1}] init 0;'
-			event_transition = '[{}] ({}={}) & ({}_enabled=true) -> 1: ({}\'={});'
+			event_transition = '[{}] ({}={}) -> 1: ({}\'={});'
 			prob_transition = '[] ({}={}) -> {};'
 			prob_format = '{}: ({}\'={})'
 
@@ -148,7 +152,7 @@ class BProgramConverter:
 			transitions = []
 			for n, tr in bt_trans.items():
 				string_tr = [event_transition.format(e, state_name,
-								n, e, state_name, s_tag) for e, s_tag in tr.items()]
+								n, state_name, s_tag) for e, s_tag in tr.items()]
 				transitions.append('\n\t'.join(string_tr))
 			
 			probabilities = []

@@ -14,7 +14,7 @@ The player can now choose to stick with their original choice or switch to the o
 @analysis_thread
 def game_show(): # b-thread for the game show host
 	# choice may be made before the bthread starts
-	hide = yield choice({1: 0.33, 2: 0.33, 3: 0.33}) # the value returned is equivalent to sampling the distribution
+	hide = yield choice({1: 0.34, 2: 0.33, 3: 0.33}) # the value returned is equivalent to sampling the distribution
 	yield sync(request=bp.BEvent(f'h{hide}'))
 	guess = yield sync(waitFor=[bp.BEvent(f'g{i}') for i in range(1, 4)]) # wait for the player to make a guess
 	doors_possible = [door for door in [1, 2, 3] if door not in [hide, int(guess.name[1:])]]
@@ -24,7 +24,7 @@ def game_show(): # b-thread for the game show host
 @analysis_thread
 def contestant():
 	yield sync(waitFor=[bp.BEvent(f'h{i}') for i in range(1, 4)]) # wait for the host to hide the prize
-	guess = yield choice({'g1': 0.33, 'g2': 0.33, 'g3': 0.33}) # the domain can be any value that can be used in a dict
+	guess = yield choice({'g1': 0.34, 'g2': 0.33, 'g3': 0.33}) # the domain can be any value that can be used in a dict
 	yield sync(request=bp.BEvent(guess))
 	o = yield sync(waitFor=[bp.BEvent(f'o{i}') for i in range(1, 4)])
 	final_choice = yield sync(request=[bp.BEvent(f'c{i}') for i in range(1, 4)])
