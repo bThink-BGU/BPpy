@@ -89,7 +89,10 @@ class DFSBThread:
                         stack.append(new_s)
             if isinstance(s.data, sync):
                 for e in self.event_list:
-                    new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
+                    if self.ess.is_satisfied(e, s.data):
+                        new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
+                    else:
+                        new_s = s
                     if new_s.data is None:
                         continue
                     s.transitions[e] = new_s
