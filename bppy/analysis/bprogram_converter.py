@@ -83,12 +83,14 @@ class BProgramConverter:
 							f'({e}_block=false)']))
 			for e in event_names]
 
-		labels = ["label \"{}\" = ({}_enabled=true);".format(e, e)
-			for e in event_names]
+		labels = ["//event {} = {};".format(e, e)
+			for i, e in enumerate(event_names)]
 		
-		event_transition = '[{}] ({}_enabled=true) -> 1: true;'
-		guards = '\n\t'.join([event_transition.format(e, e) for e in event_names])
-		module_main = '\n\nmodule main\n\t{}\nendmodule\n'.format(guards)
+		event_transition = '[{}] ({}_enabled=true) -> 1: (event\'={});'
+		guards = '\n\t'.join([event_transition.format(e, e, i)
+						for i, e in enumerate(event_names)])
+		module_main = f'\nmodule main\n\tevent: [-1..{len(event_names)}] init -1;'+\
+						f'\n\t{guards}\nendmodule\n'
 
 		header += '\n\n'.join(
 			['\n'.join(sec) for sec in [req,block,enable,
