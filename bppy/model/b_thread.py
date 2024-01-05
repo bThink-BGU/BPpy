@@ -25,16 +25,15 @@ def thread(func, mode='execution'):
                     if isinstance(e, sync):
                         local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()}
                         e["locals"] = copy(local_vars)
+                        m = yield e
+                        if m is None:
+                            break
                     elif isinstance(e, choice):
-                        pass
                         if mode == 'execution':
                             sample = e.sample()
-                            e = f.send(sample)
+                            m = sample
                     else:
                         raise TypeError("bthread must yield a bppy.model.sync_statement object")
-                    m = yield e
-                    if m is None:
-                        break
                 except (KeyError, StopIteration):
                     m = yield None
                     break

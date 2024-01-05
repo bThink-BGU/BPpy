@@ -83,7 +83,7 @@ class BProgramConverter:
 							f'({e}_block=false)']))
 			for e in event_names]
 
-		labels = ["//event {} = {};".format(e, e)
+		labels = ["//event {} = {};".format(i, e)
 			for i, e in enumerate(event_names)]
 		
 		event_transition = '[{}] ({}_enabled=true) -> 1: (event\'={});'
