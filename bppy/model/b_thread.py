@@ -32,6 +32,8 @@ def thread(func, mode='execution'):
                         if mode == 'execution':
                             sample = e.sample()
                             m = sample
+                        else:
+                            m = yield e
                     else:
                         raise TypeError("bthread must yield a bppy.model.sync_statement object")
                 except (KeyError, StopIteration):
