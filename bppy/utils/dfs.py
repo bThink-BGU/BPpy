@@ -11,7 +11,8 @@ class Node:
     def __key(self):
         if isinstance(self.data, choice):
             return str(self.data._id)
-        return str(self.data)
+        a = str(self.data)
+        return a
 
     def __hash__(self):
         return hash(self.__key())
@@ -93,13 +94,13 @@ class DFSBThread:
                 for e in self.event_list:
                     if self.ess.is_satisfied(e, s.data):
                         new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
+                        if new_s not in visited:
+                            stack.append(new_s)
                     else:
                         new_s = s
                     if new_s.data is None:
                         continue
                     s.transitions[e] = new_s
-                    if new_s not in visited:
-                        stack.append(new_s)
         if return_requested_and_blocked:
             return init_s, visited, requested, blocked
         return init_s, visited
