@@ -38,7 +38,7 @@ class DFSBThread:
     def get_state(self, prefix):
         bt = self.bthread_gen()
         s = bt.send(None) # s = sync or Choice
-        for e in prefix: # e = event or choice key
+        for e in prefix: # e = event or choice sample result
             if s is None:
                 break
             if isinstance(s, sync): 
@@ -81,10 +81,12 @@ class DFSBThread:
                     else:
                         blocked.update([x for x in self.event_list if x in s.data["block"]])
             if isinstance(s.data, choice):
-                for c in s.data.keys():
-                    new_s = Node(s.prefix + (c,), 
-                        self.get_state(s.prefix + (c,)))
-                    s.transitions[c] = (new_s, s.data[c])
+                for outcome, prob in s.data.options():
+                    if isinstance(outcome, dict) and len(outcome) == 1:
+                        outcome = outcome[0]
+                    new_s = Node(s.prefix + (outcome,), 
+                        self.get_state(s.prefix + (outcome,)))
+                    s.transitions[outcome] = (new_s, prob)
                     if new_s not in visited:
                         stack.append(new_s)
             if isinstance(s.data, sync):

@@ -129,9 +129,8 @@ class BProgramConverter:
 						bt_trans[n][e] = (node_to_s[node.transitions[events[e]]] if
 										events[e] in node.transitions else n)
 				if isinstance(node.data, choice):
-					bt_probs[n] = {rand_choice: (node_to_s[node.transitions[rand_choice][0]],
-												node.transitions[rand_choice][1])
-										for rand_choice in node.data.keys()}
+					bt_probs[n] = {choice_outcome: (node_to_s[node.transitions[choice_outcome][0]],
+												choice_prob) for choice_outcome, choice_prob in node.data.options()}
 
 			module_template = '\nmodule {}\n\t{}\n\n\t{}\nendmodule\n'
 			state_template = "formula {}_{}_{} = {};"
