@@ -89,4 +89,4 @@ class choice(dict):
 			return res
 	
 	def __eq__(self, other):
-		return self._id == other._id
+		return isinstance(other, choice) and self._id == other._id

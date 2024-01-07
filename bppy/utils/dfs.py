@@ -7,12 +7,17 @@ class Node:
         self.prefix = prefix
         self.data = data
         self.transitions = {}
+        self.__hash = None
 
     def __key(self):
         if isinstance(self.data, choice):
-            return str(self.data._id)
-        a = str(self.data)
-        return a
+            return self.data._id
+        if not self.__hash:
+            self.__hash = hash(str(self.data))
+            return self.__hash
+        else:
+            return self.__hash
+        return str(self.data)
 
     def __hash__(self):
         return hash(self.__key())
@@ -113,7 +118,7 @@ class NodeList:
         self.transitions = {}
 
     def __key(self):
-        return ";".join([n.get_key() for n in self.nodes])
+        return hash(tuple([n.get_key() for n in self.nodes]))
 
     def __hash__(self):
         return hash(self.__key())
