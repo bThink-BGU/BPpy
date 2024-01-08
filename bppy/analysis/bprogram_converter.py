@@ -22,7 +22,7 @@ class BProgramConverter:
 			A list of event objects which are used in the model.
 		bt_names : list, optional
 			Names to used for the matching bthreads in the prism model.
-			If none, the bthreads are named bt_0, bt_1, etc.
+			If none, the bthreads are named bt0, bt1, etc.
 		max_trace_length : int, optional
 			Maximum length of the trace before terminating the search. Defaults to 1000.
 		"""
@@ -31,7 +31,7 @@ class BProgramConverter:
 		if bt_names is not None:
 			self.bt_names = bt_names
 		else:
-			names = [f'bt_{i}' for i in range(len(self.bprogram_generator().bthreads))]
+			names = [f'bt{i}' for i in range(len(self.bprogram_generator().bthreads))]
 			self.bt_names = names
 		self.max_trace_length = max_trace_length
 
@@ -55,40 +55,48 @@ class BProgramConverter:
 		Returns the resulting text content.
 
 		Parameters
-        ----------
-        output_file : str, optional
-            Name of the file to write the PRISM model to.
+		----------
+		output_file : str, optional
+			Name of the file to write the PRISM model to.
 			Defaults to 'None'.
-        """
+		"""
 
 		event_names, events, bp_states = self.collect_structure()
 
-		rule_template = "formula is_{}_{} = {};"
-		bt_condition = "(is_{}_{}_{}={})"
+		rule_template = "formula {}_{} = {};"
+		bt_condition = "({}_{}_{}={})"
 
 		header = 'mdp\n\n'
 
-		req = [rule_template.format(e, "requested",
-				' | '.join([bt_condition.format(bt,'requesting',e,'true')
+		req = [rule_template.format(e, "req",
+				' | '.join([bt_condition.format(bt,'req',e,'true')
 				for bt in self.bt_names]))
 			for e in event_names]
 
-		block = [rule_template.format(e, "blocked",
-				' | '.join([bt_condition.format(bt,'blocking',e,'true')
+		block = [rule_template.format(e, "block",
+				' | '.join([bt_condition.format(bt,'block',e,'true')
 				for bt in self.bt_names]))
 			for e in event_names]
 
-		select = [rule_template.format(e, "selected",
-				' & '.join([f'(is_{e}_requested=true)',
-							f'(is_{e}_blocked=false)']))
+		enable = [rule_template.format(e, "enabled",
+				' & '.join([f'({e}_req=true)',
+							f'({e}_block=false)']))
 			for e in event_names]
 
-		labels = ["label \"{}\" = (is_{}_selected=true);".format(e, e)
-			for e in event_names]
+		labels = ["//event {} = {};".format(i, e)
+			for i, e in enumerate(event_names)]
+		
+		event_transition = '[{}] ({}_enabled=true) -> 1: (event\'={});'
+		guards = '\n\t'.join([event_transition.format(e, e, i)
+						for i, e in enumerate(event_names)])
+		module_main = f'\nmodule main\n\tevent: [-1..{len(event_names)}] init -1;'+\
+						f'\n\t{guards}\nendmodule\n'
 
 		header += '\n\n'.join(
-			['\n'.join(sec) for sec in [req,block,select,labels]])
-
+			['\n'.join(sec) for sec in [req,block,enable,
+				labels]])
+		
+		header += module_main
 		header += '\n//-----------------------\n\n'
 
 		def format_bt_module(name, event_names, bt_states):
@@ -121,24 +129,23 @@ class BProgramConverter:
 						bt_trans[n][e] = (node_to_s[node.transitions[events[e]]] if
 										events[e] in node.transitions else n)
 				if isinstance(node.data, choice):
-					bt_probs[n] = {rand_choice: (node_to_s[node.transitions[rand_choice][0]],
-												node.transitions[rand_choice][1])
-										for rand_choice in node.data.keys()}
+					bt_probs[n] = {choice_outcome: (node_to_s[node.transitions[choice_outcome][0]],
+												choice_prob) for choice_outcome, choice_prob in node.data.options()}
 
 			module_template = '\nmodule {}\n\t{}\n\n\t{}\nendmodule\n'
-			state_template = "formula is_{}_{}_{} = {};"
+			state_template = "formula {}_{}_{} = {};"
 			state_name = f's_{name}'
 			state_init = f'{state_name}: [0..{len(bt_states)-1}] init 0;'
-			event_transition = '[{}] ({}={}) & (is_{}_selected=true) -> 1: ({}\'={});'
+			event_transition = '[{}] ({}={}) -> 1: ({}\'={});'
 			prob_transition = '[] ({}={}) -> {};'
 			prob_format = '{}: ({}\'={})'
 
-			req = [state_template.format(name, "requesting", e,
+			req = [state_template.format(name, "req", e,
 					' | '.join([('({}={})').format(state_name, n)
 					for n in bt_req[e]]) if len(bt_req[e]) > 0 else 'false')
 				for e in event_names]
 
-			block = [state_template.format(name, "blocking", e,
+			block = [state_template.format(name, "block", e,
 					' | '.join([('({}={})').format(state_name, n)
 					for n in bt_block[e]]) if len(bt_block[e]) > 0 else 'false')
 				for e in event_names]
@@ -146,7 +153,7 @@ class BProgramConverter:
 			transitions = []
 			for n, tr in bt_trans.items():
 				string_tr = [event_transition.format(e, state_name,
-								n, e, state_name, s_tag) for e, s_tag in tr.items()]
+								n, state_name, s_tag) for e, s_tag in tr.items()]
 				transitions.append('\n\t'.join(string_tr))
 			
 			probabilities = []

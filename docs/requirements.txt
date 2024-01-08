@@ -4,5 +4,4 @@ gymnasium==0.28.1
 stable-baselines3==2.0.0
 https://github.com/davidebreso/pynusmv/releases/download/v1.0rc8/pynusmv-1.0rc8-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 pygame==2.1.2
-v0.0.11
 sphinx-rtd-theme>=1.2.1
