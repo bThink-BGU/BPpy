@@ -23,7 +23,13 @@ class Node:
         return hash(self.__key())
 
     def __eq__(self, other):
-        return self.__key() == other.__key()
+        if self.__key() == other.__key():
+            if not (isinstance(self.data, choice) or isinstance(other.data, choice)):
+                return self.data == other.data
+            else:
+                return True
+        else:
+            return False
 
     def __str__(self):
         return str(self.prefix) + str(self.data)
