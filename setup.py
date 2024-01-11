@@ -46,5 +46,5 @@ setuptools.setup(
         "gym": gym_dependencies,
         "develop": gym_dependencies + develop_dependencies
     },
-    python_requires='>=3.4'
+    python_requires='>=3.9'
 )
