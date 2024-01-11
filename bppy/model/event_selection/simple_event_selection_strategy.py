@@ -26,8 +26,14 @@ class SimpleEventSelectionStrategy(EventSelectionStrategy):
         Returns
         -------
         bool
-            True if the statement requests or waits for the selected event, False otherwise.
+            True if the statement requests or waits for the selected event while not blocking it, False otherwise.
         """
+        if isinstance(statement.get('block'), BEvent):
+            if statement.get('block') == event:
+                return False
+        else:
+            if statement.get('block', EmptyEventSet()).__contains__(event):
+                return False
         if isinstance(statement.get('request'), BEvent):
             if isinstance(statement.get('waitFor'), BEvent):
                 return statement.get('request') == event or statement.get('waitFor') == event

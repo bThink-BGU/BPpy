@@ -117,6 +117,9 @@ class BProgram:
         """
         while len(self.new_bt) > 0:
             new_tickets = [{'bt': bt} for bt in self.new_bt]
+            for bt in self.new_bt:
+                if bt.gi_frame.f_locals['mode'] == 'analysis':
+                    warnings.warn("Some new bthreads are analysis bthreads and will not affect the bprogram execution correctly.", RuntimeWarning)
             self.new_bt.clear()
             self.advance_bthreads(new_tickets, None)
             self.tickets.extend(new_tickets)

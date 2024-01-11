@@ -20,6 +20,14 @@ bppy.utils.exceptions module
    :undoc-members:
    :show-inheritance:
 
+bppy.utils.weighted\_sampling module
+------------------------------------
+
+.. automodule:: bppy.utils.weighted_sampling
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bppy.utils.z3helper module
 --------------------------
 

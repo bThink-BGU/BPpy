@@ -2,8 +2,13 @@ from copy import copy
 from bppy.model.sync_statement import sync, choice
 from warnings import warn
 
+def execution_thread(func):
+    return thread(func, 'execution')
 
-def thread(func):
+def analysis_thread(func):
+    return thread(func, 'analysis')
+
+def thread(func, mode='execution'):
     """
     A decorator to wrap bthread generator with, in order to handle data transmission and bthread termination.
     """
@@ -20,13 +25,17 @@ def thread(func):
                     if isinstance(e, sync):
                         local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()}
                         e["locals"] = copy(local_vars)
+                        m = yield e
+                        if m is None:
+                            break
                     elif isinstance(e, choice):
-                        pass
+                        if mode == 'execution':
+                            sample = e.sample()
+                            m = sample
+                        else:
+                            m = yield e
                     else:
                         raise TypeError("bthread must yield a bppy.model.sync_statement object")
-                    m = yield e
-                    if m is None:
-                        break
                 except (KeyError, StopIteration):
                     m = yield None
                     break

@@ -7,17 +7,29 @@ class Node:
         self.prefix = prefix
         self.data = data
         self.transitions = {}
+        self.__hash = None
 
     def __key(self):
         if isinstance(self.data, choice):
-            return str(self.data._id)
+            return self.data._id
+        if not self.__hash:
+            self.__hash = hash(str(self.data))
+            return self.__hash
+        else:
+            return self.__hash
         return str(self.data)
 
     def __hash__(self):
         return hash(self.__key())
 
     def __eq__(self, other):
-        return self.__key() == other.__key()
+        if self.__key() == other.__key():
+            if not (isinstance(self.data, choice) or isinstance(other.data, choice)):
+                return self.data == other.data
+            else:
+                return True
+        else:
+            return False
 
     def __str__(self):
         return str(self.prefix) + str(self.data)
@@ -38,7 +50,7 @@ class DFSBThread:
     def get_state(self, prefix):
         bt = self.bthread_gen()
         s = bt.send(None) # s = sync or Choice
-        for e in prefix: # e = event or choice key
+        for e in prefix: # e = event or choice sample result
             if s is None:
                 break
             if isinstance(s, sync): 
@@ -81,20 +93,25 @@ class DFSBThread:
                     else:
                         blocked.update([x for x in self.event_list if x in s.data["block"]])
             if isinstance(s.data, choice):
-                for c in s.data.keys():
-                    new_s = Node(s.prefix + (c,), 
-                        self.get_state(s.prefix + (c,)))
-                    s.transitions[c] = (new_s, s.data[c])
+                for outcome, prob in s.data.options():
+                    if isinstance(outcome, dict) and len(outcome) == 1:
+                        outcome = outcome[0]
+                    new_s = Node(s.prefix + (outcome,), 
+                        self.get_state(s.prefix + (outcome,)))
+                    s.transitions[outcome] = (new_s, prob)
                     if new_s not in visited:
                         stack.append(new_s)
             if isinstance(s.data, sync):
                 for e in self.event_list:
-                    new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
+                    if self.ess.is_satisfied(e, s.data):
+                        new_s = Node(s.prefix + (e,), self.get_state(s.prefix + (e,)))
+                        if new_s not in visited:
+                            stack.append(new_s)
+                    else:
+                        new_s = s
                     if new_s.data is None:
                         continue
                     s.transitions[e] = new_s
-                    if new_s not in visited:
-                        stack.append(new_s)
         if return_requested_and_blocked:
             return init_s, visited, requested, blocked
         return init_s, visited
@@ -107,7 +124,7 @@ class NodeList:
         self.transitions = {}
 
     def __key(self):
-        return ";".join([n.get_key() for n in self.nodes])
+        return hash(tuple([n.get_key() for n in self.nodes]))
 
     def __hash__(self):
         return hash(self.__key())
