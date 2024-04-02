@@ -142,7 +142,8 @@ class BProgramConverter:
 			transitions = []
 			for n, tr in bt_trans.items():
 				string_tr = [event_transition.format(e, state_name,
-								n, state_name, s_tag) for e, s_tag in tr.items()]
+								n, state_name, s_tag) for e, s_tag in tr.items()
+								if e in event_names]
 				transitions.append('\n\t'.join(string_tr))
 			
 			probabilities = []
