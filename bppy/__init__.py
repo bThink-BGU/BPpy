@@ -1,7 +1,7 @@
 from os import listdir
 from os.path import dirname, basename, isfile, join, isdir
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 # TODO: find a smarter way to import all submodules
 from bppy.execution.listeners.b_program_runner_listener import *
 from bppy.execution.listeners.print_b_program_runner_listener import *
