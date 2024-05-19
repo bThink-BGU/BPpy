@@ -11,7 +11,7 @@ class SMTEventSelectionStrategy(SolverBasedEventSelectionStrategy):
     For the original strategy, see :class:`RichEventSelectionStrategy<bppy.model.event_selection.rich_event_selection_strategy.RichEventSelectionStrategy>`.
     """
     def is_satisfied(self, event, statement):
-        return is_true(event.eval(statement.get('waitFor', false)) or event.eval(statement.get('request', false)))
+        return is_true(event.eval(statement.get('waitFor', false), model_completion=True) or event.eval(statement.get('request', false), model_completion=True))
 
     # TODO: implement a way to set additional_statement
     def select(self, statements, additional_statement=None):

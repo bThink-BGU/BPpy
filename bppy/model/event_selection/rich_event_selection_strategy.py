@@ -10,5 +10,5 @@ class RichEventSelectionStrategy(SMTEventSelectionStrategy):
     """
 
     def is_satisfied(self, event, statement):
-        return is_true(event.eval(statement.get('waitFor', true)))
+        return is_true(event.eval(statement.get('waitFor', true), model_completion=True))
 
