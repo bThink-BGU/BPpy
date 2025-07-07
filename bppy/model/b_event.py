@@ -24,7 +24,7 @@ class BEvent:
         self.data = data if data is not None else {}
 
     def __key(self):
-        return self.name, tuple(sorted(self.data.items()))
+        return self.name, frozenset(self.data.items())
 
     def __hash__(self):
         return hash(self.__key())
