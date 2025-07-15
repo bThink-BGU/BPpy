@@ -36,15 +36,14 @@ docker run -it tomyaacov/bppy-docker
 ## Citing BPpy
 To cite this repository in publications:
 ```
-@article{yaacov_bppy_2023,
-title = {BPpy: Behavioral programming in Python},
-journal = {SoftwareX},
-volume = {24},
-pages = {101556},
-year = {2023},
-issn = {2352-7110},
-doi = {https://doi.org/10.1016/j.softx.2023.101556},
-url = {https://www.sciencedirect.com/science/article/pii/S2352711023002522},
-author = {Tom Yaacov}
+@inproceedings{yaacov_exploring_2025,
+	title = {Exploring and Evaluating Interplays of BPpy with Deep Reinforcement Learning and Formal Methods},
+	isbn = {978-989-758-742-9},
+	doi = {10.5220/0013215200003928},
+	booktitle = {Proceedings of the 20th International Conference on Evaluation of Novel Approaches to Software Engineering},
+	publisher = {SciTePress},
+	author = {Yaacov, Tom and Weiss, Gera and Ashrov, Adiel and Katz, Guy and Zisser, Jules},
+	year = {2025},
+	pages = {27--40},
 }
 ```
