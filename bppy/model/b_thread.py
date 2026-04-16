@@ -23,7 +23,7 @@ def thread(func, mode='execution'):
                         warn("using dict for statements is deprecated, use bppy.model.sync_statement.sync instead.")
                         e = sync(**e)
                     if isinstance(e, sync):
-                        local_vars = {var:val for var, val in copy(f.gi_frame.f_locals).items()}
+                        local_vars = dict(f.gi_frame.f_locals)
                         e["locals"] = copy(local_vars)
                         m = yield e
                         if m is None:
